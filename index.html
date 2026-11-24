@@ -100,6 +100,7 @@ footer{grid-column:1/4;display:flex;gap:14px;align-items:center;padding:0 10px;b
 #toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1f2328;color:#fff;padding:8px 14px;border-radius:8px;display:none;z-index:11}
 @media (max-width:900px){#app{grid-template-columns:170px 1fr 190px}}
 header{flex-direction:column;align-items:stretch;justify-content:center;gap:4px;padding:3px 10px;overflow:hidden}
+.hrow button small{opacity:.6;font-size:10px;margin-left:3px;font-weight:600}
 .hrow{display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;min-height:34px}
 #bLayout{font-weight:600}
 #app.noL{grid-template-columns:0 1fr 250px}#app.noR{grid-template-columns:230px 1fr 0}#app.noL.noR{grid-template-columns:0 1fr 0}
@@ -153,8 +154,8 @@ body.dark #lpop,body.dark #pop,body.dark #obar{border-color:#1e3a5f}
  <div class="hrow">
   <button id="bFit">Adatta vista</button>
   <span class="sep"></span>
-  <button id="bSnap" class="on">Snap</button>
-  <button id="bOrtho">Orto</button>
+  <button id="bSnap" class="on" title="Aggancio ai punti, centri e muri (F3)">Snap <small>F3</small></button>
+  <button id="bOrtho" title="Orto: muri sempre a squadra, orizzontali o verticali (F8). Tieni premuto Maiusc per invertire">⊾ Orto <small>F8</small></button>
   <button id="bQuote" class="on">Quote muri</button>
   <span class="sep"></span>
   <button id="bGrid" title="Aggancia muri e punti alla griglia">▦ Griglia</button>
@@ -389,7 +390,7 @@ under:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3
 const TOOLS=[['Costruzione',[['select','Seleziona','V',1],['del','Cancella','Canc',0,1],['wall','Muro','W'],['part','Tramezzo','E'],['door','Porte','D',1],['win','Finestre','N',1],['room','Stanza','S'],['dim','Quota','Q'],['text','Testo','T']]],
 ['Altro',[['hand','Sposta vista','H'],['line','Linea','L'],['calib','Calibra scala','C'],['under','Sposta sfondo','B']]],
 ['Pannelli',[['lib','Arredi','A',0,1],['layers','Layer','Y',0,1]]]];
-const HELP={select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, doppio clic, Invio o “Fine disegno” per finire. Shift = ortogonale. Su tablet: tieni premuto e punta (vedi l’aggancio), rilascia per confermare il punto e passare al successivo.',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Clic sui vertici, doppio clic o Invio per chiudere: mostra la superficie.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
+const HELP={select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, Invio per finire. F8 = Orto (a squadra). Tablet: premi, punta e rilascia per confermare.',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Clic sui vertici, doppio clic o Invio per chiudere: mostra la superficie.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
 let lastOpen={door:'door',win:'win'};
 function buildTools(){const t=$('#tb');t.innerHTML='';TOOLS.forEach(([g,list],gi)=>{if(gi){const v=document.createElement('span');v.className='vsep';t.appendChild(v)}const grp=document.createElement('div');grp.className='tgrp';
 list.forEach(([id,n,k,dd,sp])=>{const b=document.createElement('button');b.className='tbtn';b.dataset.t=id;if(sp)b.dataset.sp=1;b.title=n+' ('+k+')';b.innerHTML=`<svg viewBox="0 0 24 24">${ICO[id]}</svg><span>${n}${dd?' <span class="car">▾</span>':''}</span>`;b.onclick=e=>{e.stopPropagation();if(id==='lib'){closePop();toggleLib()}else if(id==='layers'){closePop();openLayers(b)}else if(id==='del'){closePop();delSel()}else if(id==='select'){setTool('select');openSelPop(b)}else if(dd)openPop(id,b);else{closePop();setTool(id)}};grp.appendChild(b)});t.appendChild(grp)})}
@@ -429,16 +430,31 @@ e.onclick=()=>startPlace(Object.assign({},x.g));grid.appendChild(e)})})}
 /* ---------- snap ---------- */
 function snapPoints(){const P=[];S.items.forEach(i=>{if(!vis(i))return;if(i.pts)i.pts.forEach(p=>P.push(p));else if(i.t==='dim'){P.push(i.a,i.b)}});if(S.under&&S.under.vis&&L('sfondo').v&&underReady()&&UH.pts){const u=S.under;UH.pts.forEach(p=>P.push([u.x+p[0]*u.s,u.y+p[1]*u.s]))}return P}
 function snapSegs(){const L=[];S.items.forEach(i=>{if(!vis(i))return;if((i.t==='wall'||i.t==='line')&&i.pts)for(let k=0;k<i.pts.length-1;k++)L.push([i.pts[k],i.pts[k+1]]);else if(i.t==='room')for(let k=0;k<i.pts.length;k++)L.push([i.pts[k],i.pts[(k+1)%i.pts.length]])});return L}
-function doSnap(wx,wy,last){let p=[wx,wy],info=null;const tol=12/view.z;
-/* chiusura della forma: il primo punto del muro in corso si aggancia con una zona più ampia (comoda col dito) */
-if(draft&&draft.pts.length>=3&&draft.t!=='dim'){const f=draft.pts[0];if(Math.hypot(f[0]-wx,f[1]-wy)<22/view.z)return{p:[f[0],f[1]],info:'chiusura'}}
-if(snapOn){let best=tol;for(const q of snapPoints()){const d=Math.hypot(q[0]-wx,q[1]-wy);if(d<best){best=d;p=[q[0],q[1]];info='punto'}}
- if(!info){const segs=snapSegs();for(const[a,b]of segs){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];const d=Math.hypot(m[0]-wx,m[1]-wy);if(d<best){best=d;p=m;info='medio'}}
-  if(!info){let bd=tol*.8;for(const[a,b]of segs){const r=segDist([wx,wy],a,b);if(r.d<bd){bd=r.d;p=r.q;info='muro'}}
-   if(info==='muro'&&last&&(orthoOn||shiftDown)){const[a,b]=segs.find(([a,b])=>segDist(p,a,b).d<.01)||[];if(a){const hor=Math.abs(wx-last[0])>Math.abs(wy-last[1]);const dx=b[0]-a[0],dy=b[1]-a[1];if(hor&&Math.abs(dy)>1e-6){const t=(last[1]-a[1])/dy;if(t>=0&&t<=1)p=[a[0]+t*dx,last[1]];else info=null}else if(!hor&&Math.abs(dx)>1e-6){const t=(last[0]-a[0])/dx;if(t>=0&&t<=1)p=[last[0],a[1]+t*dy];else info=null}else info=null}}}}}
-if(!info){p=[wx,wy];if(last&&(orthoOn||shiftDown)){if(Math.abs(wx-last[0])>Math.abs(wy-last[1]))p[1]=last[1];else p[0]=last[0]}
- const g=S.gridOn?S.grid:1;const r=v=>Math.round(v/g)*g;if(last&&(orthoOn||shiftDown)){if(p[1]===last[1])p[0]=r(p[0]);else p[1]=r(p[1])}else p=[r(p[0]),r(p[1])];info=S.gridOn?'griglia':null}
-return{p,info}}
+/* Orto (F8): muri a squadra. Maiusc tenuto premuto inverte lo stato (come in AutoCAD) */
+const orthoNow=()=>orthoOn!==shiftDown;
+function doSnap(wx,wy,last){const z=view.z,tolP=12/z,tolT=9/z,tolM=8/z,tolE=6/z;let p=[wx,wy],info=null,ref=null;
+const ortho=!!last&&orthoNow(),ax=ortho?(Math.abs(wx-last[0])>=Math.abs(wy-last[1])?'h':'v'):null;
+const A=q=>ax==='h'?q[0]:q[1],Cr=q=>ax==='h'?q[1]:q[0];const mk=a=>ax==='h'?[a,last[1]]:[last[0],a];
+/* chiusura della forma: zona ampia sul primo punto (comoda col dito); in Orto solo se è davvero allineato */
+if(draft&&draft.pts.length>=3&&draft.t!=='dim'){const f=draft.pts[0];if(Math.hypot(f[0]-wx,f[1]-wy)<22/z&&(!ortho||Math.abs(Cr(f)-Cr(last))<1.5))return{p:[f[0],f[1]],info:'chiusura'}}
+const pts=snapPoints().concat(draft&&draft.pts.length>1?draft.pts.slice(0,-1):[]);
+if(ortho){
+ p=mk(A([wx,wy]));
+ if(snapOn){
+  /* allineamento: la misura lungo l'asse si aggancia a quella di un vertice vicino (con guida tratteggiata) */
+  let best=tolT;for(const q of pts){const d=Math.abs(A(q)-A([wx,wy]));if(d<best){best=d;p=mk(A(q));info=Math.abs(Cr(q)-Cr(last))<tolP?'punto':'allinea';ref=q}}
+  if(!info){let bd=tolM;for(const[a,b]of snapSegs()){const dc=Cr(b)-Cr(a);if(Math.abs(dc)<1e-6)continue;const t=(Cr(last)-Cr(a))/dc;if(t<0||t>1)continue;const aa=A(a)+t*(A(b)-A(a)),d=Math.abs(aa-A([wx,wy]));if(d<bd){bd=d;p=mk(aa);info='muro'}}}
+ }
+ if(!info){const g=S.gridOn?S.grid:1;p=mk(Math.round(A([wx,wy])/g)*g);info=S.gridOn?'griglia':null}
+ return{p,info,ref}}
+/* libero: zone di aggancio piccole (punti 12 px, centri 8 px, bordo muro 6 px) per non tirare i muri fuori squadro */
+if(snapOn){
+ let best=tolP;for(const q of pts){const d=Math.hypot(q[0]-wx,q[1]-wy);if(d<best){best=d;p=[q[0],q[1]];info='punto'}}
+ if(!info){const segs=snapSegs();best=tolM;for(const[a,b]of segs){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];const d=Math.hypot(m[0]-wx,m[1]-wy);if(d<best){best=d;p=m;info='medio'}}
+  if(!info){best=tolE;for(const[a,b]of segs){const r=segDist([wx,wy],a,b);if(r.d<best){best=r.d;p=r.q;info='muro'}}}}
+}
+if(!info){const g=S.gridOn?S.grid:1,r=v=>Math.round(v/g)*g;p=[r(wx),r(wy)];info=S.gridOn?'griglia':null}
+return{p,info,ref}}
 function wallSnapForBlock(wx,wy){let best=35,r=null;S.items.forEach(i=>{if(i.t!=='wall'||!vis(i))return;for(let k=0;k<i.pts.length-1;k++){const s=segDist([wx,wy],i.pts[k],i.pts[k+1]);if(s.d<best+i.th/2){best=s.d;r={q:s.q,th:i.th,ang:Math.atan2(i.pts[k+1][1]-i.pts[k][1],i.pts[k+1][0]-i.pts[k][0])*180/Math.PI}}}});return r}
 /* arredi appoggiati ai muri (anche inclinati) e negli angoli */
 function furnSnap(x,y,w,h,relRot,origRot){let best=null;
@@ -475,9 +491,11 @@ ctx.strokeStyle=TH.ax;ctx.beginPath();ctx.moveTo(view.x+.5,0);ctx.lineTo(view.x+
 function drawCloseRing(){if(!draft||draft.t==='dim'||draft.pts.length<3)return;const f=w2s(draft.pts[0][0],draft.pts[0][1]),near=mouse.snap==='chiusura';ctx.save();ctx.beginPath();ctx.arc(f[0],f[1],near?14:10,0,7);ctx.fillStyle=near?'rgba(22,163,74,.28)':'rgba(22,163,74,.08)';ctx.fill();ctx.strokeStyle='#16a34a';ctx.lineWidth=2.5;ctx.stroke();ctx.restore()}
 function drawDraftDots(){if(!draft||draft.t==='dim'&&draft.pts.length>1)return;ctx.save();ctx.fillStyle='#0284c7';ctx.strokeStyle='#fff';ctx.lineWidth=2;draft.pts.forEach(p=>{const s=w2s(p[0],p[1]);ctx.beginPath();ctx.arc(s[0],s[1],5,0,7);ctx.fill();ctx.stroke()});ctx.restore()}
 function dbarSync(){const el=$('#dbar');if(!el)return;const on=!!(draft&&draft.pts.length&&draft.t!=='dim');el.style.display=on?'flex':'none';if(on)$('#dClose').style.display=(draft.t!=='room'&&draft.pts.length>=3)?'':'none'}
-function drawSnapMark(){const s=w2s(mouse.x,mouse.y),k=mouse.snap;ctx.strokeStyle='#0284c7';ctx.fillStyle='#fff';ctx.lineWidth=1.8;ctx.beginPath();
+function drawSnapMark(){const s=w2s(mouse.x,mouse.y),k=mouse.snap;
+if(mouse.ref&&(k==='allinea'||k==='punto')){const r=w2s(mouse.ref[0],mouse.ref[1]);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#0284c7';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(r[0],r[1]);ctx.lineTo(s[0],s[1]);ctx.stroke();ctx.restore()}
+ctx.strokeStyle='#0284c7';ctx.fillStyle='#fff';ctx.lineWidth=1.8;ctx.beginPath();
 if(k==='punto'){ctx.rect(s[0]-6,s[1]-6,12,12);ctx.fill();ctx.stroke()}else if(k==='medio'){ctx.moveTo(s[0],s[1]-7);ctx.lineTo(s[0]+7,s[1]+5);ctx.lineTo(s[0]-7,s[1]+5);ctx.closePath();ctx.fill();ctx.stroke()}
-else if(k==='muro'){ctx.moveTo(s[0]-6,s[1]-6);ctx.lineTo(s[0]+6,s[1]+6);ctx.moveTo(s[0]+6,s[1]-6);ctx.lineTo(s[0]-6,s[1]+6);ctx.stroke()}else if(k==='griglia'){ctx.arc(s[0],s[1],3.5,0,7);ctx.fill();ctx.stroke()}
+else if(k==='allinea'){ctx.moveTo(s[0]-5,s[1]);ctx.lineTo(s[0]+5,s[1]);ctx.moveTo(s[0],s[1]-5);ctx.lineTo(s[0],s[1]+5);ctx.stroke()}else if(k==='muro'){ctx.moveTo(s[0]-6,s[1]-6);ctx.lineTo(s[0]+6,s[1]+6);ctx.moveTo(s[0]+6,s[1]-6);ctx.lineTo(s[0]-6,s[1]+6);ctx.stroke()}else if(k==='griglia'){ctx.arc(s[0],s[1],3.5,0,7);ctx.fill();ctx.stroke()}
 else{ctx.arc(s[0],s[1],2,0,7);ctx.stroke()}}
 function drawUnder(){const u=S.under;if(!u||!u.vis||!underReady()||!L('sfondo').v)return;ctx.save();const o=w2s(u.x,u.y);ctx.translate(o[0],o[1]);ctx.scale(u.s*view.z,u.s*view.z);ctx.globalAlpha=u.op;
 if(UH.kind==='img'&&UH.img&&UH.img.complete)ctx.drawImage(UH.img,0,0);
@@ -519,7 +537,7 @@ function hitHandle(wx,wy){const i=getItem(sel);if(!i)return null;const H=handleP
 const ptrs=new Map();let pinch=null;
 function pos(e){const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
 function updMouse(e){const[sx,sy]=pos(e);const w=s2w(sx,sy);shiftDown=e.shiftKey;let last=null;if(draft&&draft.pts.length)last=draft.pts[draft.pts.length-1];if(calib&&calib.a&&!calib.b)last=calib.a;
-if(tool==='select'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[1];mouse.snap=null}else{const r=doSnap(w[0],w[1],last);mouse.x=r.p[0];mouse.y=r.p[1];mouse.snap=r.info||''}
+if(tool==='select'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[1];mouse.snap=null}else{const r=doSnap(w[0],w[1],last);mouse.x=r.p[0];mouse.y=r.p[1];mouse.snap=r.info||'';mouse.ref=r.ref||null}
 mouse.sx=sx;mouse.sy=sy;
 if(tool==='place'&&ghostBlock){const def=LIBMAP[ghostBlock.id];let g={x:mouse.x,y:mouse.y,rot:ghostBlock.rot,h:null};if(def.lock){const ws=wallSnapForBlock(w[0],w[1]);if(ws){g.x=ws.q[0];g.y=ws.q[1];g.rot=ws.ang+(ghostBlock.flip?180:0);g.h=ws.th+2}}else if(magOn&&!e.altKey){const r=furnSnap(w[0],w[1],ghostBlock.w||def.w,ghostBlock.h||def.h,ghostBlock.rot,null);if(r){g.x=r.x;g.y=r.y;g.rot=r.rot}}mouse.ghost=g}
 $('#stPos').textContent=`x ${Math.round(mouse.x)} · y ${Math.round(mouse.y)} cm`}
@@ -1070,8 +1088,15 @@ el.querySelector('#lbOk').onclick=()=>lenAdd();const c=el.querySelector('#lbClos
 
 /* ---------- avvio ---------- */
 $('#bImport').onclick=openImport;$('#bFit').onclick=fitAll;$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;
-$('#bSnap').onclick=e=>{snapOn=!snapOn;e.target.classList.toggle('on',snapOn)};
-$('#bOrtho').onclick=e=>{orthoOn=!orthoOn;e.target.classList.toggle('on',orthoOn)};
+/* Snap (F3) e Orto (F8): stato salvato; su tablet l'Orto parte attivo */
+function setSnap(v,msg){snapOn=!!v;try{localStorage.setItem('planimetria-snap',snapOn?'1':'0')}catch(e){}$('#bSnap').classList.toggle('on',snapOn);if(msg)toast(snapOn?'Snap attivo':'Snap disattivato');draw()}
+function setOrtho(v,msg){orthoOn=!!v;try{localStorage.setItem('planimetria-ortho',orthoOn?'1':'0')}catch(e){}$('#bOrtho').classList.toggle('on',orthoOn);if(msg)toast(orthoOn?'Orto attivo: muri a squadra':'Orto disattivato: muri liberi');draw()}
+$('#bSnap').onclick=()=>setSnap(!snapOn,true);
+$('#bOrtho').onclick=()=>setOrtho(!orthoOn,true);
+addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();setOrtho(!orthoOn,true)}else if(e.key==='F3'){e.preventDefault();setSnap(!snapOn,true)}});
+(()=>{let o=null,s=null;try{o=localStorage.getItem('planimetria-ortho');s=localStorage.getItem('planimetria-snap')}catch(e){}
+orthoOn=o==null?matchMedia('(pointer:coarse)').matches:o==='1';snapOn=s==null?true:s==='1';
+$('#bOrtho').classList.toggle('on',orthoOn);$('#bSnap').classList.toggle('on',snapOn)})();
 $('#bQuote').onclick=e=>{quoteOn=!quoteOn;e.target.classList.toggle('on',quoteOn);draw()};
 $('#bGrid').onclick=()=>{S.gridOn=!S.gridOn;gridUI();commit();draw();toast(S.gridOn?'Griglia attiva: passo '+S.grid+' cm':'Griglia disattivata: disegno libero al centimetro')};
 $('#gStep').onchange=e=>{const v=Math.round(+e.target.value);if(v>=1&&v<=500){S.grid=v;if(!S.gridOn)S.gridOn=true;commit();panel();draw()}gridUI()};
