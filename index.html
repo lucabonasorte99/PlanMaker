@@ -44,7 +44,7 @@ h4:first-child{margin-top:0}
 #pop .blk{width:96px}
 #pop .selopt{display:flex;align-items:center;gap:10px;width:240px;text-align:left;padding:9px 10px;font-size:13px}#pop .selopt svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}#pop .selopt span{display:flex;flex-direction:column;gap:3px}#pop .selopt small{font-size:11px;opacity:.75}
 .tbtn.dis{opacity:.4}
-#dbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:none;flex-wrap:wrap;justify-content:center;gap:8px;width:max-content;max-width:calc(100% - 16px);z-index:6;background:var(--panel);border:1px solid #7dd3fc;border-radius:14px;padding:8px;box-shadow:0 8px 24px rgba(2,132,199,.25)}#dbar button{min-height:46px;padding:0 16px;font-size:15px;font-weight:700;border-radius:10px;white-space:nowrap}
+#dbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:none;flex-wrap:wrap;justify-content:center;gap:6px;width:max-content;max-width:calc(100% - 16px);z-index:6;background:var(--panel);border:1px solid #7dd3fc;border-radius:14px;padding:6px;box-shadow:0 8px 24px rgba(2,132,199,.25)}#dbar button{min-height:44px;padding:0 12px;font-size:14px;font-weight:700;border-radius:10px;white-space:nowrap}
 #layout{position:fixed;inset:0;z-index:8;background:var(--bg);display:none;flex-direction:column}
 .lyTop{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap;color:var(--ico)}
 .lyTop label{display:flex;align-items:center;gap:5px;font-size:12px}.lyTop select{padding:5px 6px;border:1px solid var(--line);border-radius:7px}
@@ -170,7 +170,7 @@ body.dark #lpop,body.dark #pop,body.dark #obar{border-color:#1e3a5f}
   <input id="search" placeholder="Cerca (letto, tavolo, doccia…)">
   <div id="lib"></div>
 </aside>
-<main><div id="obar"></div><div id="lbar"></div><div id="cvw"><canvas id="cv"></canvas><div id="dbar"><button class="pri" id="dOk">✓ Fine</button><button id="dClose">⟲ Chiudi forma</button><button id="dBack">↶ Indietro</button><button id="dCancel">✕ Annulla</button></div></div></main>
+<main><div id="obar"></div><div id="lbar"></div><div id="cvw"><canvas id="cv"></canvas><div id="dbar"><button class="pri" id="dOk">✓ Fine</button><button id="dClose" title="Chiudi la forma sul primo punto">⟲ Chiudi</button><button id="dBack">↶ Indietro</button><button id="dCancel">✕ Annulla</button></div></div></main>
 <aside id="right"><div id="props"></div></aside>
 <footer><span id="stPos">x 0 · y 0 cm</span><span id="stZoom"></span><span id="stHelp"></span><span class="tb"><button id="fFine">Fine disegno</button><button id="fRot">Ruota</button><button id="fDel">Elimina</button></span></footer>
 </div>
@@ -462,7 +462,7 @@ V.filter(i=>i.t==='wall'||i.t==='line').forEach(i=>drawItem(i));
 V.filter(i=>i.t==='block').forEach(i=>drawItem(i));
 V.filter(i=>i.t==='dim'||i.t==='text').forEach(i=>drawItem(i));
 if(tool==='place'&&ghostBlock&&mouse.ghost){ctx.globalAlpha=.6;drawBlock(ghostItem(),false);ctx.globalAlpha=1}
-if(draft){drawDraft();drawCloseRing()}
+if(draft){drawDraft();drawCloseRing();drawDraftDots()}
 if(calib&&calib.a){const a=w2s(...calib.a),b=w2s(mouse.x,mouse.y);if(calib.b)Object.assign(b,w2s(...calib.b));ctx.strokeStyle='#dc2626';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(b[0],b[1]);ctx.stroke()}
 if(sel){const it=getItem(sel);if(it)drawHandles(it)}
 if(drag&&drag.k==='box'&&drag.moved){const a=w2s(drag.a[0],drag.a[1]),b=w2s(drag.b[0],drag.b[1]);ctx.save();ctx.fillStyle='rgba(2,132,199,.10)';ctx.strokeStyle='#0284c7';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.restore()}
@@ -473,6 +473,7 @@ const lines=(st,col)=>{ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();for(l
 if(S.gridOn){let st=S.grid;while(st*z<7)st*=2;lines(st,TH.gA1);lines(st*5,TH.gA2)}else{let st=10;while(st*z<9)st*=5;lines(st,TH.g1);lines(st*5,TH.g2)}
 ctx.strokeStyle=TH.ax;ctx.beginPath();ctx.moveTo(view.x+.5,0);ctx.lineTo(view.x+.5,H);ctx.moveTo(0,view.y+.5);ctx.lineTo(W,view.y+.5);ctx.stroke()}
 function drawCloseRing(){if(!draft||draft.t==='dim'||draft.pts.length<3)return;const f=w2s(draft.pts[0][0],draft.pts[0][1]),near=mouse.snap==='chiusura';ctx.save();ctx.beginPath();ctx.arc(f[0],f[1],near?14:10,0,7);ctx.fillStyle=near?'rgba(22,163,74,.28)':'rgba(22,163,74,.08)';ctx.fill();ctx.strokeStyle='#16a34a';ctx.lineWidth=2.5;ctx.stroke();ctx.restore()}
+function drawDraftDots(){if(!draft||draft.t==='dim'&&draft.pts.length>1)return;ctx.save();ctx.fillStyle='#0284c7';ctx.strokeStyle='#fff';ctx.lineWidth=2;draft.pts.forEach(p=>{const s=w2s(p[0],p[1]);ctx.beginPath();ctx.arc(s[0],s[1],5,0,7);ctx.fill();ctx.stroke()});ctx.restore()}
 function dbarSync(){const el=$('#dbar');if(!el)return;const on=!!(draft&&draft.pts.length&&draft.t!=='dim');el.style.display=on?'flex':'none';if(on)$('#dClose').style.display=(draft.t!=='room'&&draft.pts.length>=3)?'':'none'}
 function drawSnapMark(){const s=w2s(mouse.x,mouse.y),k=mouse.snap;ctx.strokeStyle='#0284c7';ctx.fillStyle='#fff';ctx.lineWidth=1.8;ctx.beginPath();
 if(k==='punto'){ctx.rect(s[0]-6,s[1]-6,12,12);ctx.fill();ctx.stroke()}else if(k==='medio'){ctx.moveTo(s[0],s[1]-7);ctx.lineTo(s[0]+7,s[1]+5);ctx.lineTo(s[0]-7,s[1]+5);ctx.closePath();ctx.fill();ctx.stroke()}
@@ -522,7 +523,9 @@ if(tool==='select'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[
 mouse.sx=sx;mouse.sy=sy;
 if(tool==='place'&&ghostBlock){const def=LIBMAP[ghostBlock.id];let g={x:mouse.x,y:mouse.y,rot:ghostBlock.rot,h:null};if(def.lock){const ws=wallSnapForBlock(w[0],w[1]);if(ws){g.x=ws.q[0];g.y=ws.q[1];g.rot=ws.ang+(ghostBlock.flip?180:0);g.h=ws.th+2}}else if(magOn&&!e.altKey){const r=furnSnap(w[0],w[1],ghostBlock.w||def.w,ghostBlock.h||def.h,ghostBlock.rot,null);if(r){g.x=r.x;g.y=r.y;g.rot=r.rot}}mouse.ghost=g}
 $('#stPos').textContent=`x ${Math.round(mouse.x)} · y ${Math.round(mouse.y)} cm`}
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,pos(e));if(ptrs.size===2){if(drag&&drag.moved&&drag.k!=='pan'&&drag.k!=='under'&&drag.k!=='box'){commit()}drag=null;cancelFirstTouch();const[a,b]=[...ptrs.values()];const c=[(a[0]+b[0])/2,(a[1]+b[1])/2];pinch={d:Math.max(1,Math.hypot(a[0]-b[0],a[1]-b[1])),z:view.z,w:s2w(c[0],c[1])};draw();return}
+cv.addEventListener('pointerdown',e=>{/* un nuovo tocco "primario" significa che non ci sono altre dita sullo schermo: se restano tocchi appesi (palmo, gesto di sistema) li scarta, altrimenti il disegno si blocca */
+if(e.isPrimary&&e.pointerType!=='mouse'){ptrs.clear();pinch=null;drag=null}
+try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,pos(e));if(ptrs.size===2){if(drag&&drag.moved&&drag.k!=='pan'&&drag.k!=='under'&&drag.k!=='box'){commit()}drag=null;cancelFirstTouch();const[a,b]=[...ptrs.values()];const c=[(a[0]+b[0])/2,(a[1]+b[1])/2];pinch={d:Math.max(1,Math.hypot(a[0]-b[0],a[1]-b[1])),z:view.z,w:s2w(c[0],c[1])};draw();return}
 if(ptrs.size>2)return;
 firstTouch=e.pointerType==='touch'?{t:Date.now(),n:S.items.length,dn:draft?draft.pts.length:-1,si}:null;
 updMouse(e);const wx=mouse.x,wy=mouse.y;
@@ -559,7 +562,8 @@ else if(drag.k==='size'){const c=Math.cos(rad(it.rot)),s=Math.sin(rad(it.rot)),d
 draw();return}
 draw()});
 function endPtr(e){ptrs.delete(e.pointerId);if(pinch){if(ptrs.size===0)pinch=null;draw();return}if(drag){if(drag.k==='box')finishBox(drag);else if(drag.k==='mmove'&&!drag.moved&&drag.tg)setSelIds(selIds().filter(id=>id!==drag.tg));else if(drag.k==='pan'&&drag.clr&&!drag.pm)setSelIds([]);if(drag.k==='pan')cv.style.cursor=tool==='hand'?'grab':'default';else if(drag.k!=='box'&&(drag.moved||drag.k==='under'))commit();drag=null;panel()}if(pendingRemote&&!drag&&!draft){const p=pendingRemote;pendingRemote=null;applyRemote(p)}draw()}
-cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);cv.addEventListener('lostpointercapture',endPtr);
+addEventListener('blur',()=>{ptrs.clear();pinch=null});document.addEventListener('visibilitychange',()=>{if(document.hidden){ptrs.clear();pinch=null}});
 cv.addEventListener('dblclick',()=>{if(draft)finishDraft()});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('wheel',e=>{e.preventDefault();const[sx,sy]=pos(e),w=s2w(sx,sy);view.z=Math.max(.02,Math.min(8,view.z*Math.exp(-e.deltaY*.0015)));view.x=sx-w[0]*view.z;view.y=sy-w[1]*view.z;draw()},{passive:false});
