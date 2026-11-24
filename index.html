@@ -1082,7 +1082,11 @@ initTheme();restore();buildTools();try{if(localStorage.getItem('planimetria-lib'
 </script>
 <script>
 /* App installabile: funziona offline quando è pubblicata su https (es. GitHub Pages) */
-if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+/* quando arriva una versione nuova, ricarica da sola (appena non stai disegnando) */
+const had=!!navigator.serviceWorker.controller;let rl=false;
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||rl)return;rl=true;const go=()=>{if(typeof draft!=='undefined'&&(draft||drag))setTimeout(go,3000);else location.reload()};go()});
+addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{})})}
 </script>
 </body>
 </html>
