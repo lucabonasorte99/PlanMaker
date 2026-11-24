@@ -1,0 +1,16 @@
+{
+  "name": "Planimetria – Arreda casa",
+  "short_name": "Planimetria",
+  "description": "Disegna la pianta, arreda con blocchi parametrici, importa DXF/PDF in scala ed esporta PDF e DXF.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f7f5",
+  "theme_color": "#0284c7",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
