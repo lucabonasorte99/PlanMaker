@@ -195,7 +195,7 @@ let TH=THEMES.light,BG=TH.bg;
 let S={items:[],under:null,wallTh:15,partTh:10,nid:1,grid:10,gridOn:true,layers:{},furnCol:''};let magOn=true;
 let UH={};            // dati pesanti dello sfondo (immagine / primitive DXF)
 let view={x:200,y:120,z:.4};
-let tool='select',sel=null,msel=[],selMode='single',draft=null,ghostBlock=null,mouse={x:0,y:0,sx:0,sy:0,snap:null};
+let tool='select',sel=null,msel=[],selMode='single',aim=null,penT=0,draft=null,ghostBlock=null,mouse={x:0,y:0,sx:0,sy:0,snap:null};
 let snapOn=true,orthoOn=false,quoteOn=true,spaceDown=false,shiftDown=false,drag=null,calib=null;
 let states=[],si=-1;
 
@@ -389,7 +389,7 @@ under:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3
 const TOOLS=[['Costruzione',[['select','Seleziona','V',1],['del','Cancella','Canc',0,1],['wall','Muro','W'],['part','Tramezzo','E'],['door','Porte','D',1],['win','Finestre','N',1],['room','Stanza','S'],['dim','Quota','Q'],['text','Testo','T']]],
 ['Altro',[['hand','Sposta vista','H'],['line','Linea','L'],['calib','Calibra scala','C'],['under','Sposta sfondo','B']]],
 ['Pannelli',[['lib','Arredi','A',0,1],['layers','Layer','Y',0,1]]]];
-const HELP={select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, doppio clic, Invio o “Fine disegno” per finire. Shift = ortogonale.',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Clic sui vertici, doppio clic o Invio per chiudere: mostra la superficie.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
+const HELP={select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, doppio clic, Invio o “Fine disegno” per finire. Shift = ortogonale. Su tablet: tieni premuto e punta (vedi l’aggancio), rilascia per confermare il punto e passare al successivo.',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Clic sui vertici, doppio clic o Invio per chiudere: mostra la superficie.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
 let lastOpen={door:'door',win:'win'};
 function buildTools(){const t=$('#tb');t.innerHTML='';TOOLS.forEach(([g,list],gi)=>{if(gi){const v=document.createElement('span');v.className='vsep';t.appendChild(v)}const grp=document.createElement('div');grp.className='tgrp';
 list.forEach(([id,n,k,dd,sp])=>{const b=document.createElement('button');b.className='tbtn';b.dataset.t=id;if(sp)b.dataset.sp=1;b.title=n+' ('+k+')';b.innerHTML=`<svg viewBox="0 0 24 24">${ICO[id]}</svg><span>${n}${dd?' <span class="car">▾</span>':''}</span>`;b.onclick=e=>{e.stopPropagation();if(id==='lib'){closePop();toggleLib()}else if(id==='layers'){closePop();openLayers(b)}else if(id==='del'){closePop();delSel()}else if(id==='select'){setTool('select');openSelPop(b)}else if(dd)openPop(id,b);else{closePop();setTool(id)}};grp.appendChild(b)});t.appendChild(grp)})}
@@ -523,9 +523,17 @@ if(tool==='select'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[
 mouse.sx=sx;mouse.sy=sy;
 if(tool==='place'&&ghostBlock){const def=LIBMAP[ghostBlock.id];let g={x:mouse.x,y:mouse.y,rot:ghostBlock.rot,h:null};if(def.lock){const ws=wallSnapForBlock(w[0],w[1]);if(ws){g.x=ws.q[0];g.y=ws.q[1];g.rot=ws.ang+(ghostBlock.flip?180:0);g.h=ws.th+2}}else if(magOn&&!e.altKey){const r=furnSnap(w[0],w[1],ghostBlock.w||def.w,ghostBlock.h||def.h,ghostBlock.rot,null);if(r){g.x=r.x;g.y=r.y;g.rot=r.rot}}mouse.ghost=g}
 $('#stPos').textContent=`x ${Math.round(mouse.x)} · y ${Math.round(mouse.y)} cm`}
+/* penna: finché la si usa (e per 2 secondi dopo) i tocchi della mano appoggiata vengono ignorati; ignora anche i contatti molto larghi (palmo) */
+const palm=new Set(),penBusy=()=>performance.now()-penT<2000;
+['pointerdown','pointermove','pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,e=>{
+if(e.pointerType==='pen'){penT=performance.now();return}
+if(e.pointerType!=='touch')return;
+if(t==='pointerdown'&&(penBusy()||(e.width>60&&e.height>60)))palm.add(e.pointerId);
+else if(t==='pointermove'&&penBusy())palm.add(e.pointerId);
+if(palm.has(e.pointerId)){e.stopImmediatePropagation();if(t==='pointerup'||t==='pointercancel')palm.delete(e.pointerId)}}));
 cv.addEventListener('pointerdown',e=>{/* un nuovo tocco "primario" significa che non ci sono altre dita sullo schermo: se restano tocchi appesi (palmo, gesto di sistema) li scarta, altrimenti il disegno si blocca */
-if(e.isPrimary&&e.pointerType!=='mouse'){ptrs.clear();pinch=null;drag=null}
-try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,pos(e));if(ptrs.size===2){if(drag&&drag.moved&&drag.k!=='pan'&&drag.k!=='under'&&drag.k!=='box'){commit()}drag=null;cancelFirstTouch();const[a,b]=[...ptrs.values()];const c=[(a[0]+b[0])/2,(a[1]+b[1])/2];pinch={d:Math.max(1,Math.hypot(a[0]-b[0],a[1]-b[1])),z:view.z,w:s2w(c[0],c[1])};draw();return}
+if(e.isPrimary&&e.pointerType!=='mouse'){ptrs.clear();pinch=null;drag=null;aim=null}
+try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,pos(e));if(ptrs.size===2){if(drag&&drag.moved&&drag.k!=='pan'&&drag.k!=='under'&&drag.k!=='box'){commit()}drag=null;aim=null;cancelFirstTouch();const[a,b]=[...ptrs.values()];const c=[(a[0]+b[0])/2,(a[1]+b[1])/2];pinch={d:Math.max(1,Math.hypot(a[0]-b[0],a[1]-b[1])),z:view.z,w:s2w(c[0],c[1])};draw();return}
 if(ptrs.size>2)return;
 firstTouch=e.pointerType==='touch'?{t:Date.now(),n:S.items.length,dn:draft?draft.pts.length:-1,si}:null;
 updMouse(e);const wx=mouse.x,wy=mouse.y;
@@ -543,7 +551,10 @@ if(tool==='under'){if(S.under){const raw=s2w(mouse.sx,mouse.sy);drag={k:'under',
 if(tool==='place'&&ghostBlock){const raw=s2w(mouse.sx,mouse.sy),gb=ghostBlock,it=ghostItem();it.id=S.nid++;S.items.push(it);sel=it.id;if(firstTouch)firstTouch.gb=gb;commit();setTool('select');panel();drag={k:'move',id:it.id,start:raw,orig:JSON.parse(JSON.stringify(it)),moved:false,thr:e.pointerType==='touch'?10:5,px:mouse.sx,py:mouse.sy};draw();return}
 if(tool==='text'){const p=[wx,wy];askText('Testo','',v=>{if(v){S.items.push({id:S.nid++,t:'text',x:p[0],y:p[1],txt:v,fs:20});commit();draw()}});return}
 if(tool==='calib'){if(!S.under){toast('Importa prima uno sfondo');return}if(!calib)calib={a:null,b:null};if(!calib.a){calib.a=[wx,wy]}else if(!calib.b&&dist(calib.a,[wx,wy])>1){calib.b=[wx,wy];const measured=dist(calib.a,calib.b);askNumber('Distanza reale tra i due punti (cm)',Math.round(measured),v=>{if(v>0){const k=v/measured,u=S.under,A=calib.a;u.s*=k;u.x=A[0]-(A[0]-u.x)*k;u.y=A[1]-(A[1]-u.y)*k;commit();toast('Scala calibrata ✔');fitAll()}calib=null;setTool('select')},()=>{calib=null;draw()})}draw();return}
-if(tool==='wall'||tool==='part'||tool==='line'||tool==='room'||tool==='dim'){if(!draft)draft={t:tool,pts:[]};const L=draft.pts[draft.pts.length-1];if(L&&dist(L,[wx,wy])<.5)return;if((draft.t==='wall'||draft.t==='part'||draft.t==='line')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){draft.pts.push(draft.pts[0].slice());finishDraft();toast('Forma chiusa');return}if(draft.t==='room'&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){finishDraft();return}draft.pts.push([wx,wy]);if(draft.t==='dim'&&draft.pts.length===2)finishDraft();draw();if(draft&&e.pointerType==='mouse')setTimeout(()=>{const i=$('#lbLen');if(i){i.focus();i.select()}},0)}});
+/* mouse: il punto si mette al clic. Dito/penna: premi e punta (vedi l'aggancio), il punto si conferma al rilascio */
+if(DRAWT.includes(tool)){if(e.pointerType!=='mouse'){aim={id:e.pointerId};draw();return}addPoint(wx,wy,'mouse')}});
+const DRAWT=['wall','part','line','room','dim'];
+function addPoint(wx,wy,pt){if(!draft)draft={t:tool,pts:[]};const L=draft.pts[draft.pts.length-1];if(L&&dist(L,[wx,wy])<.5)return;if((draft.t==='wall'||draft.t==='part'||draft.t==='line')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){draft.pts.push(draft.pts[0].slice());finishDraft();toast('Forma chiusa');return}if(draft.t==='room'&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){finishDraft();return}draft.pts.push([wx,wy]);if(draft.t==='dim'&&draft.pts.length===2)finishDraft();draw();if(draft&&pt==='mouse')setTimeout(()=>{const i=$('#lbLen');if(i){i.focus();i.select()}},0)}
 cv.addEventListener('pointermove',e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,pos(e));
 if(pinch){if(ptrs.size===2){const[a,b]=[...ptrs.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);const c=[(a[0]+b[0])/2,(a[1]+b[1])/2];view.z=Math.max(.02,Math.min(8,pinch.z*d/pinch.d));view.x=c[0]-pinch.w[0]*view.z;view.y=c[1]-pinch.w[1]*view.z;draw()}return}
 updMouse(e);
@@ -562,7 +573,8 @@ else if(drag.k==='size'){const c=Math.cos(rad(it.rot)),s=Math.sin(rad(it.rot)),d
 draw();return}
 draw()});
 function endPtr(e){ptrs.delete(e.pointerId);if(pinch){if(ptrs.size===0)pinch=null;draw();return}if(drag){if(drag.k==='box')finishBox(drag);else if(drag.k==='mmove'&&!drag.moved&&drag.tg)setSelIds(selIds().filter(id=>id!==drag.tg));else if(drag.k==='pan'&&drag.clr&&!drag.pm)setSelIds([]);if(drag.k==='pan')cv.style.cursor=tool==='hand'?'grab':'default';else if(drag.k!=='box'&&(drag.moved||drag.k==='under'))commit();drag=null;panel()}if(pendingRemote&&!drag&&!draft){const p=pendingRemote;pendingRemote=null;applyRemote(p)}draw()}
-cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);cv.addEventListener('lostpointercapture',endPtr);
+cv.addEventListener('pointerup',e=>{if(aim&&aim.id===e.pointerId){aim=null;if(DRAWT.includes(tool)&&!pinch){updMouse(e);addPoint(mouse.x,mouse.y,e.pointerType)}}});
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',e=>{if(aim&&aim.id===e.pointerId)aim=null;endPtr(e)});cv.addEventListener('lostpointercapture',e=>{if(ptrs.has(e.pointerId))endPtr(e)});
 addEventListener('blur',()=>{ptrs.clear();pinch=null});document.addEventListener('visibilitychange',()=>{if(document.hidden){ptrs.clear();pinch=null}});
 cv.addEventListener('dblclick',()=>{if(draft)finishDraft()});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
