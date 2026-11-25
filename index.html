@@ -45,6 +45,9 @@ h4:first-child{margin-top:0}
 #pop .selopt{display:flex;align-items:center;gap:10px;width:240px;text-align:left;padding:9px 10px;font-size:13px}#pop .selopt svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}#pop .selopt span{display:flex;flex-direction:column;gap:3px}#pop .selopt small{font-size:11px;opacity:.75}
 .tbtn.dis{opacity:.4}
 .walrow .seg button{min-height:30px;padding:2px 8px}
+#envChips{display:flex;gap:4px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none;margin-bottom:2px}#envChips::-webkit-scrollbar{display:none}
+#envChips button{flex:none;padding:5px 11px;border-radius:15px;font-size:12px;font-weight:600;white-space:nowrap}#envChips button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#envNav{display:flex;align-items:center;gap:6px;margin-bottom:6px}#envNav button{flex:none;min-width:40px;min-height:38px;padding:0;font-size:15px;font-weight:700}#envNav span{flex:1;min-width:0;text-align:center;font-weight:700;font-size:12.5px;line-height:1.15;color:var(--ico)}
 #flrPane{display:none}#app.showF #libPane{display:none}#app.showF #flrPane{display:block}
 #pop .mvh{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 4px}
 #pop .mvgrid{display:grid;grid-template-columns:repeat(4,62px);gap:6px}
@@ -104,7 +107,9 @@ h4:first-child{margin-top:0}
 .cat{font-size:11px;font-weight:600;color:var(--acc);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.05em}
 .row select{flex:1;min-width:0;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
 .row input[type=checkbox]{width:18px;height:18px;accent-color:var(--acc)}
-.lib{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.lib{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.lib .blk,.fgrid .blk{min-width:0}.lib .blk canvas,.fgrid .blk canvas{width:100%!important;height:auto!important}
+#left{overflow-x:hidden}
 .blk{border:1px solid #cfe8f7;border-radius:8px;padding:4px;text-align:center;cursor:pointer;background:var(--sky);font-size:11px;color:#0c4a6e;position:relative}
 .blk .x{position:absolute;top:2px;right:4px;color:var(--mute);font-size:12px;display:none}.blk:hover .x{display:block}
 .blk:hover{border-color:var(--acc)}
@@ -126,7 +131,7 @@ footer{grid-column:1/4;display:flex;gap:14px;align-items:center;padding:0 10px;b
 #modal textarea{width:100%;height:220px;font:12px/1.3 ui-monospace,monospace;border:1px solid var(--line);border-radius:6px;padding:6px}
 #modal img{max-width:100%;border:1px solid var(--line)}
 #toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1f2328;color:#fff;padding:8px 14px;border-radius:8px;display:none;z-index:11}
-@media (max-width:900px){#app{grid-template-columns:170px 1fr 190px}}
+@media (max-width:900px){#app{grid-template-columns:200px 1fr 190px}}
 header{flex-direction:column;align-items:stretch;justify-content:center;gap:4px;padding:3px 10px;overflow:hidden}
 .hrow button small{opacity:.6;font-size:10px;margin-left:3px;font-weight:600}
 .hrow{display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;min-height:34px}
@@ -197,6 +202,8 @@ body.dark #lpop,body.dark #pop,body.dark #obar{border-color:#1e3a5f}
 <nav id="tb"></nav>
 <aside id="left"><div id="libPane">
   <div class="libhead"><h4>Arredi</h4><button id="libClose" title="Chiudi la tendina arredi">«</button></div>
+  <div id="envChips"></div>
+  <div id="envNav"><button id="envPrev" title="Ambiente precedente">◀</button><span id="envName"></span><button id="envNext" title="Ambiente successivo">▶</button></div>
   <input id="search" placeholder="Cerca (letto, tavolo, doccia…)">
   <div id="lib"></div>
 </div><div id="flrPane"><div class="libhead"><h4>Pavimenti</h4><button id="flrClose" title="Chiudi la tendina pavimenti">«</button></div><div id="flr"></div></div></aside>
@@ -281,11 +288,11 @@ const LIB=[
 {id:'letto',n:'Letto',cat:'Camera',w:160,h:200,p:{tes:1,cu:0,pi:1},sz:[[80,190,'Singolo 80'],[90,200,'Singolo 90'],[120,200,'Piazza e mezza'],[140,200,'Francese 140'],[160,200,'Matrimoniale'],[180,200,'King 180']],
  o:[{k:'cu',n:'Cuscini',t:'sel',o:[[0,'Auto'],[1,'1'],[2,'2'],[3,'3']]},{k:'tes',n:'Testiera',t:'bool'},{k:'pi',n:'Piumone',t:'bool'}],
  d(c,w,h,p){const hb=p.tes?7:0;if(hb){Rc(c,-w/2,-h/2,w,hb);grey(c,()=>FS(c))}Rc(c,-w/2,-h/2+hb,w,h-hb);FS(c);const n=+p.cu||(w>=130?2:1),g=6,pw=(w-16-(n-1)*g)/n;for(let k=0;k<n;k++){RR(c,-w/2+8+k*(pw+g),-h/2+hb+8,pw,30,7);FS(c)}if(p.pi){const y=-h/2+hb+50;Rc(c,-w/2,y,w,h/2-y);FS(c);thin(c,()=>ln(c,-w/2,y+16,w/2,y+16))}}},
-{id:'castello',n:'Letto a castello',cat:'Camera',w:90,h:200,p:{sc:1},o:[{k:'sc',n:'Scaletta',t:'bool'}],
+{id:'castello',n:'Letto a castello',cat:'Camera',also:['Cameretta'],w:90,h:200,p:{sc:1},o:[{k:'sc',n:'Scaletta',t:'bool'}],
  d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);RR(c,-w/2+8,-h/2+8,w-16,30,7);FS(c);dsh(c,()=>{Rc(c,-w/2+4,-h/2+4,w-8,h-8);c.stroke()});if(p.sc){Rc(c,w/2,h/2-60,8,50);c.stroke();for(let y=h/2-50;y<h/2-10;y+=10)ln(c,w/2,y,w/2+8,y)}}},
-{id:'culla',n:'Culla / lettino',cat:'Camera',w:65,h:125,d(c,w,h){RR(c,-w/2,-h/2,w,h,8);FS(c);RR(c,-w/2+5,-h/2+5,w-10,h-10,6);c.stroke();RR(c,-w/2+10,-h/2+10,w-20,20,5);c.stroke()}},
+{id:'culla',n:'Culla / lettino',cat:'Camera',also:['Cameretta'],w:65,h:125,d(c,w,h){RR(c,-w/2,-h/2,w,h,8);FS(c);RR(c,-w/2+5,-h/2+5,w-10,h-10,6);c.stroke();RR(c,-w/2+10,-h/2+10,w-20,20,5);c.stroke()}},
 {id:'comodino',n:'Comodino',cat:'Camera',w:45,h:40,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);ln(c,-w/2,h/2-6,w/2,h/2-6);knob(c,0,h/2-3)}},
-{id:'armadio',n:'Armadio',cat:'Camera',w:200,h:60,p:{a:0,tp:'bat'},sz:[[100,60,'2 ante'],[150,60,'3 ante'],[200,60,'4 ante'],[250,60,'5 ante'],[300,60,'6 ante']],
+{id:'armadio',n:'Armadio',cat:'Camera',also:['Ingresso'],w:200,h:60,p:{a:0,tp:'bat'},sz:[[100,60,'2 ante'],[150,60,'3 ante'],[200,60,'4 ante'],[250,60,'5 ante'],[300,60,'6 ante']],
  o:[{k:'a',n:'Ante',t:'sel',o:[[0,'Auto'],...SL([1,2,3,4,5,6,8])]},{k:'tp',n:'Apertura',t:'sel',o:[['bat','Battente'],['sco','Scorrevole']]}],
  d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.a||Math.max(1,Math.round(w/50));thin(c,()=>dsh(c,()=>ln(c,-w/2+4,-2,w/2-4,-2)));
  if(p.tp==='sco'){const y1=h/2-4,y2=h/2-9;ln(c,-w/2,y1,w*.04,y1);ln(c,-w*.04,y2,w/2,y2)}else{ln(c,-w/2,h/2-4,w/2,h/2-4);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}for(let k=0;k<n;k++){const x=-w/2+w*(k+.5)/n+(k%2?-w/n*.35:w/n*.35);knob(c,x,h/2-8)}}}},
@@ -340,8 +347,8 @@ const LIB=[
  d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{ln(c,-w/2,-h/2,w/2,h/2);ln(c,w/2,-h/2,-w/2,h/2)});circ(c,0,0,4);FS(c);if(p.t==='walk'){c.save();c.lineWidth*=2.5;ln(c,-w/2,h/2,w*.1,h/2);c.restore()}else{c.save();c.lineWidth*=2;ln(c,-w/2,h/2,w/2,h/2);c.restore()}}},
 {id:'vasca',n:'Vasca',cat:'Bagno',w:170,h:75,sz:[[150,70,'150×70'],[170,75,'170×75'],[180,80,'180×80']],d(c,w,h){RR(c,-w/2,-h/2,w,h,8);FS(c);RR(c,-w/2+8,-h/2+8,w-16,h-16,h*.3);c.stroke();circ(c,w/2-20,0,3);c.stroke()}},
 {id:'vascaang',n:'Vasca angolare',cat:'Bagno',w:140,h:140,d(c,w,h){c.beginPath();c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,-h/2+40);c.quadraticCurveTo(w/2,h/2,-w/2+40,h/2);c.lineTo(-w/2,h/2);c.closePath();FS(c);c.beginPath();c.moveTo(-w/2+10,-h/2+10);c.lineTo(w/2-10,-h/2+10);c.lineTo(w/2-10,-h/2+40);c.quadraticCurveTo(w/2-14,h/2-14,-w/2+40,h/2-10);c.lineTo(-w/2+10,h/2-10);c.closePath();c.stroke()}},
-{id:'lavatrice',n:'Lavatrice',cat:'Bagno',w:60,h:60,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,4,w*.3);c.stroke();circ(c,0,4,w*.2);thin(c,()=>c.stroke())}},
-{id:'asciugatrice',n:'Asciugatrice',cat:'Bagno',w:60,h:60,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);dsh(c,()=>{circ(c,0,4,w*.3);c.stroke()},4,3)}},
+{id:'lavatrice',n:'Lavatrice',cat:'Bagno',also:['Lavanderia'],w:60,h:60,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,4,w*.3);c.stroke();circ(c,0,4,w*.2);thin(c,()=>c.stroke())}},
+{id:'asciugatrice',n:'Asciugatrice',cat:'Bagno',also:['Lavanderia'],w:60,h:60,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);dsh(c,()=>{circ(c,0,4,w*.3);c.stroke()},4,3)}},
 {id:'termo',n:'Termoarredo',cat:'Bagno',w:50,h:10,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{for(let x=-w/2+5;x<w/2;x+=5)ln(c,x,-h/2,x,h/2)})}},
 /* Studio */
 {id:'scrivania',n:'Scrivania',cat:'Studio',w:140,h:70,p:{f:'lin',s:1},o:[{k:'f',n:'Forma',t:'sel',o:[['lin','Lineare'],['ang','Angolare']],on:(it)=>{if(it.p.f==='ang'&&it.h<120)it.h=150;if(it.p.f==='lin'&&it.h>100)it.h=70}},{k:'s',n:'Sedia',t:'bool'}],
@@ -352,8 +359,151 @@ const LIB=[
 {id:'scala',n:'Scala',cat:'Varie',w:100,h:300,p:{g:0},o:[{k:'g',n:'Gradini',t:'sel',o:[[0,'Auto'],...SL([8,10,12,14,16,18,20])]}],d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.g||Math.max(3,Math.round(h/28));for(let k=1;k<n;k++){const y=-h/2+h*k/n;ln(c,-w/2,y,w/2,y)}ln(c,0,h/2-8,0,-h/2+10);c.beginPath();c.moveTo(-7,-h/2+20);c.lineTo(0,-h/2+8);c.lineTo(7,-h/2+20);c.stroke();circ(c,0,h/2-8,3);c.stroke()}},
 {id:'pianta',n:'Pianta',cat:'Varie',w:45,h:45,d(c,w,h){circ(c,0,0,w/2);c.save();c.fillStyle='rgba(74,160,110,.2)';FS(c);c.restore();for(let i=0;i<7;i++){const a=i*Math.PI*2/7;ln(c,0,0,Math.cos(a)*w*.42,Math.sin(a)*h*.42)}}},
 {id:'colonna',n:'Pilastro',cat:'Varie',w:30,h:30,d(c,w,h){Rc(c,-w/2,-h/2,w,h);c.save();c.fillStyle='#2b2f36';FS(c);c.restore()}},
-{id:'caldaia',n:'Caldaia',cat:'Varie',w:45,h:35,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,0,Math.min(w,h)*.25);c.stroke()}},
+{id:'caldaia',n:'Caldaia',cat:'Varie',also:['Lavanderia'],w:45,h:35,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,0,Math.min(w,h)*.25);c.stroke()}},
 {id:'box',n:'Blocco personalizzato',cat:'Varie',w:100,h:60,p:{f:'rett'},o:[{k:'f',n:'Forma',t:'sel',o:[['rett','Rettangolo'],['tondo','Ellisse']]}],d(c,w,h,p){shape(c,w,h,p.f,0);FS(c);thin(c,()=>{if(p.f!=='tondo'){ln(c,-w/2,-h/2,w/2,h/2)}})}},
+/* ===== Nuovi arredi, divisi per ambiente (tutti modificabili: misure e opzioni) ===== */
+/* Camera */
+{id:'como',n:'Comò',cat:'Camera',w:120,h:50,p:{c:3},sz:[[90,45,'90 cm'],[120,50,'120 cm'],[150,50,'150 cm']],o:[{k:'c',n:'Cassetti',t:'int',min:1,max:6}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{Rc(c,-w/2+4,-h/2+4,w-8,h-12);c.stroke()});const n=Math.max(1,+p.c||3);for(let k=0;k<n;k++)knob(c,-w/2+w*(k+.5)/n,h/2-5);for(let k=1;k<n;k++){const x=-w/2+w*k/n;thin(c,()=>ln(c,x,h/2-12,x,h/2))}}},
+{id:'pancaletto',n:'Panca fondoletto',cat:'Camera',w:120,h:40,p:{cu:1},sz:[[100,38,'100 cm'],[120,40,'120 cm'],[160,40,'160 cm']],o:[{k:'cu',n:'Cuscino',t:'bool'}],
+ d(c,w,h,p){RR(c,-w/2,-h/2,w,h,5);FS(c);if(p.cu){RR(c,-w/2+4,-h/2+4,w-8,h-8,4);thin(c,()=>c.stroke())}}},
+{id:'specchiera',n:'Specchiera',cat:'Camera',also:['Ingresso','Bagno'],w:60,h:6,sz:[[40,5,'40 cm'],[60,6,'60 cm'],[90,6,'90 cm'],[120,6,'120 cm']],
+ d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);const s=Math.min(14,w*.2);thin(c,()=>{ln(c,-w/2+4,h/2,-w/2+4+s,-h/2);ln(c,-w/2+10,h/2,-w/2+10+s,-h/2)})}},
+{id:'comodino2',n:'Comodino cassetti',cat:'Camera',w:45,h:40,p:{c:2},o:[{k:'c',n:'Cassetti',t:'int',min:1,max:4}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.c||2);for(let k=1;k<=n;k++){const y=h/2-4-(k-1)*5;thin(c,()=>ln(c,-w/2+4,y,w/2-4,y))}knob(c,0,h/2-2)}},
+{id:'lettocom',n:'Letto con comodini',cat:'Camera',w:250,h:200,p:{cu:0,tes:1,pi:1},sz:[[170,190,'Singolo + comodini'],[230,200,'Francese + comodini'],[250,200,'Matrimoniale + comodini'],[270,200,'King + comodini']],
+ o:[{k:'cu',n:'Cuscini',t:'sel',o:[[0,'Auto'],[1,'1'],[2,'2'],[3,'3']]},{k:'tes',n:'Testiera',t:'bool'},{k:'pi',n:'Piumone',t:'bool'}],
+ d(c,w,h,p){const nw=45,bw=Math.max(40,w-2*nw-6),x0=-bw/2;Rc(c,-w/2,-h/2,nw,40);FS(c);knob(c,-w/2+nw/2,-h/2+20);Rc(c,w/2-nw,-h/2,nw,40);FS(c);knob(c,w/2-nw/2,-h/2+20);
+  const hb=p.tes?7:0;if(hb){Rc(c,x0,-h/2,bw,hb);grey(c,()=>FS(c))}Rc(c,x0,-h/2+hb,bw,h-hb);FS(c);const n=+p.cu||(bw>=130?2:1),g=6,pw=(bw-16-(n-1)*g)/n;for(let k=0;k<n;k++){RR(c,x0+8+k*(pw+g),-h/2+hb+8,pw,30,7);FS(c)}
+  if(p.pi){const y=-h/2+hb+50;Rc(c,x0,y,bw,h/2-y);FS(c);thin(c,()=>ln(c,x0,y+16,x0+bw,y+16))}}},
+/* Cameretta */
+{id:'lettosing',n:'Letto singolo bimbo',cat:'Cameretta',w:80,h:170,p:{sp:1,cu:1},sz:[[70,140,'70×140'],[80,170,'80×170'],[90,190,'90×190']],o:[{k:'sp',n:'Sponde',t:'bool'},{k:'cu',n:'Cuscino',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);if(p.cu){RR(c,-w/2+8,-h/2+8,w-16,28,7);FS(c)}if(p.sp)dsh(c,()=>{Rc(c,-w/2+3,-h/2+3,w-6,h-6);c.stroke()},5,3);Rc(c,-w/2,-h/2,w,6);grey(c,()=>FS(c))}},
+{id:'scrivcam',n:'Scrivania cameretta',cat:'Cameretta',w:120,h:60,p:{cs:'dx',se:1},sz:[[100,55,'100×55'],[120,60,'120×60'],[140,65,'140×65']],o:[{k:'cs',n:'Cassettiera',t:'sel',o:[['no','Nessuna'],['sx','Sinistra'],['dx','Destra']]},{k:'se',n:'Sedia',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const dw=Math.min(40,w*.35);if(p.cs==='sx'||p.cs==='dx'){const x=p.cs==='sx'?-w/2:w/2-dw;Rc(c,x,-h/2,dw,h);grey(c,()=>FS(c));for(let k=1;k<=3;k++)thin(c,()=>ln(c,x+4,h/2-k*6,x+dw-4,h/2-k*6))}if(p.se)chair(c,p.cs==='sx'?w*.15:-w*.15,h/2+16,0)}},
+{id:'armcam',n:'Armadio cameretta',cat:'Cameretta',w:150,h:55,p:{a:3},sz:[[100,55,'2 ante'],[150,55,'3 ante'],[200,55,'4 ante']],o:[{k:'a',n:'Ante',t:'int',min:1,max:6}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.a||3);ln(c,-w/2,h/2-4,w/2,h/2-4);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}for(let k=0;k<n;k++)knob(c,-w/2+w*(k+.5)/n+(k%2?3:-3),h/2-2)}},
+{id:'fasciatoio',n:'Fasciatoio',cat:'Cameretta',w:90,h:55,p:{va:1},o:[{k:'va',n:'Vaschetta',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);RR(c,-w/2+5,-h/2+5,w*.6,h-10,6);thin(c,()=>c.stroke());if(p.va){ell(c,w/2-w*.18,0,w*.12,h*.3);thin(c,()=>c.stroke())}}},
+{id:'tappgioco',n:'Tappeto gioco',cat:'Cameretta',w:150,h:150,p:{f:'tondo'},o:[{k:'f',n:'Forma',t:'sel',o:[['tondo','Tondo'],['rett','Rettangolare'],['ovale','Ovale']]}],
+ d(c,w,h,p){dsh(c,()=>{shape(c,w,h,p.f,8);c.save();c.fillStyle='rgba(250,204,21,.18)';FS(c);c.restore();shape(c,w*.7,h*.7,p.f,6);c.stroke();shape(c,w*.4,h*.4,p.f,4);c.stroke()},8,5)}},
+{id:'libbassa',n:'Libreria bassa',cat:'Cameretta',w:100,h:32,p:{m:3},o:[{k:'m',n:'Moduli',t:'int',min:1,max:6}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.m||3);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}for(let k=0;k<n;k++){const x=-w/2+w*(k+.5)/n;thin(c,()=>{Rc(c,x-w/n*.35,-h/2+5,w/n*.7,h-10);c.stroke()})}}},
+/* Soggiorno */
+{id:'consolle',n:'Consolle',cat:'Soggiorno',also:['Ingresso'],w:120,h:35,p:{c:2},sz:[[90,30,'90 cm'],[120,35,'120 cm'],[160,35,'160 cm']],o:[{k:'c',n:'Cassetti',t:'int',min:0,max:4}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.c|0;for(let k=0;k<n;k++){const x=-w/2+w*(k+.5)/n;thin(c,()=>{Rc(c,x-w/n*.4,h/2-9,w/n*.8,6);c.stroke()});knob(c,x,h/2-6)}}},
+{id:'parete',n:'Parete attrezzata',cat:'Soggiorno',w:300,h:45,p:{m:3,tv:1},sz:[[240,45,'240 cm'],[300,45,'300 cm'],[360,45,'360 cm'],[420,45,'420 cm']],o:[{k:'m',n:'Moduli bassi',t:'int',min:1,max:6},{k:'tv',n:'Televisore',t:'bool'}],
+ d(c,w,h,p){const cw=Math.min(50,w*.16);Rc(c,-w/2,-h/2,w,h);FS(c);Rc(c,-w/2+cw,-h/2,w-2*cw,h*.78);FS(c);thin(c,()=>{ln(c,-w/2+cw,-h/2,-w/2+cw,h/2);ln(c,w/2-cw,-h/2,w/2-cw,h/2)});const n=Math.max(1,+p.m||3),x1=-w/2+cw,x2=w/2-cw;for(let k=1;k<n;k++){const x=x1+(x2-x1)*k/n;ln(c,x,-h/2,x,-h/2+h*.78)}if(p.tv)dsh(c,()=>{Rc(c,-w*.17,-h/2+4,w*.34,5);c.stroke()},3,2)}},
+{id:'vetrina',n:'Vetrina',cat:'Soggiorno',w:90,h:40,p:{a:2},sz:[[60,38,'1 anta'],[90,40,'2 ante'],[135,40,'3 ante']],o:[{k:'a',n:'Ante',t:'int',min:1,max:5}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.a||2);ln(c,-w/2,h/2-4,w/2,h/2-4);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}for(let k=0;k<n;k++){const x=-w/2+w*(k+.5)/n,s=Math.min(10,w/n*.25);thin(c,()=>ln(c,x-s,h/2-8,x+s,-h/2+8))}}},
+{id:'relax',n:'Poltrona relax',cat:'Soggiorno',w:80,h:90,p:{rc:0},o:[{k:'rc',n:'Poggiapiedi aperto',t:'bool'}],
+ d(c,w,h,p){sofa(c,w,h,{n:1});if(p.rc)dsh(c,()=>{RR(c,-w*.35,h/2+2,w*.7,38,6);c.stroke()},5,3)}},
+{id:'nido',n:'Tavolini a nido',cat:'Soggiorno',w:70,h:70,p:{n:3,f:'tondo'},o:[{k:'n',n:'Tavolini',t:'int',min:2,max:4},{k:'f',n:'Forma',t:'sel',o:[['tondo','Tondi'],['rett','Quadrati']]}],
+ d(c,w,h,p){const n=Math.max(2,+p.n||3);for(let k=0;k<n;k++){const s=1-k*.22;c.save();c.translate(-w/2*(1-s)*.9,h/2*(1-s)*.9);shape(c,w*s,h*s,p.f,5);FS(c);c.restore()}}},
+{id:'stufa',n:'Stufa a pellet',cat:'Soggiorno',w:45,h:50,p:{cr:1},o:[{k:'cr',n:'Zona di rispetto',t:'bool'}],
+ d(c,w,h,p){if(p.cr)dsh(c,()=>{Rc(c,-w/2-20,-h/2-20,w+40,h+40);c.stroke()},4,4);Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,-h/2+10,6);c.stroke();Rc(c,-w/2+6,-h/2+20,w-12,h-26);thin(c,()=>c.stroke())}},
+{id:'mbar',n:'Mobile bar',cat:'Soggiorno',w:100,h:45,p:{b:4},o:[{k:'b',n:'Bottiglie',t:'int',min:0,max:8}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>ln(c,-w/2,h/2-9,w/2,h/2-9));const n=+p.b|0;for(let k=0;k<n;k++){circ(c,n>1?-w/2+10+k*(w-20)/(n-1):0,-h/2+10,3);c.stroke()}}},
+/* Pranzo */
+{id:'tavoloall',n:'Tavolo allungabile',cat:'Pranzo',w:160,h:90,pad:42,p:{s:6,ex:0},sz:[[120,80,'120×80 chiuso'],[160,90,'160×90 chiuso'],[200,100,'200×100 chiuso']],
+ o:[{k:'ex',n:'Allungato',t:'bool',on:(it)=>{it.w=it.p.ex?it.w+80:Math.max(100,it.w-80)}},{k:'s',n:'Sedie',t:'int',min:0,max:14}],
+ d(c,w,h,p){tableChairs(c,w,h,{f:'rett',s:p.s});shape(c,w,h,'rett',3);FS(c);shape(c,w-10,h-10,'rett',2);thin(c,()=>c.stroke());if(p.ex)thin(c,()=>dsh(c,()=>{const x=w*.12;ln(c,-x,-h/2+3,-x,h/2-3);ln(c,x,-h/2+3,x,h/2-3)},4,3))}},
+{id:'madia',n:'Madia',cat:'Pranzo',w:200,h:50,p:{a:4,cs:1},sz:[[150,50,'150 cm'],[200,50,'200 cm'],[250,50,'250 cm']],o:[{k:'a',n:'Ante',t:'int',min:2,max:6},{k:'cs',n:'Cassetti in alto',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(2,+p.a||4);ln(c,-w/2,h/2-5,w/2,h/2-5);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}if(p.cs)thin(c,()=>ln(c,-w/2,-h/2+14,w/2,-h/2+14));for(let k=0;k<n;k++)knob(c,-w/2+w*(k+.5)/n,h/2-2)}},
+{id:'tavalto',n:'Tavolo alto con sgabelli',cat:'Pranzo',w:120,h:60,pad:30,p:{sg:4},o:[{k:'sg',n:'Sgabelli',t:'int',min:0,max:10}],
+ d(c,w,h,p){const n=+p.sg|0,top=Math.ceil(n/2),bot=n-top;const stool=(x,y)=>{circ(c,x,y,13);FS(c);circ(c,x,y,7);thin(c,()=>c.stroke())};for(let k=0;k<top;k++)stool(-w/2+w*(k+.5)/top,-h/2-17);for(let k=0;k<bot;k++)stool(-w/2+w*(k+.5)/bot,h/2+17);Rc(c,-w/2,-h/2,w,h);FS(c)}},
+{id:'sediabr',n:'Sedia con braccioli',cat:'Pranzo',w:55,h:55,d(c,w,h){RR(c,-w/2,-h/2,w,h,5);FS(c);Rc(c,-w/2,-h/2,w,8);FS(c);Rc(c,-w/2,-h/2+8,6,h-8);FS(c);Rc(c,w/2-6,-h/2+8,6,h-8);FS(c)}},
+{id:'pancaang',n:'Panca ad angolo',cat:'Pranzo',w:160,h:160,p:{ch:'sx'},o:[{k:'ch',n:'Lato corto',t:'sel',o:[['sx','Sinistra'],['dx','Destra']]}],
+ d(c,w,h,p){const d=45;c.save();if(p.ch==='dx')c.scale(-1,1);c.beginPath();c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,-h/2+d);c.lineTo(-w/2+d,-h/2+d);c.lineTo(-w/2+d,h/2);c.lineTo(-w/2,h/2);c.closePath();FS(c);thin(c,()=>{ln(c,-w/2+d,-h/2+d,-w/2+d,-h/2);ln(c,-w/2,-h/2+d,-w/2+d,-h/2+d)});c.restore()}},
+{id:'carrello',n:'Carrello di servizio',cat:'Pranzo',also:['Cucina'],w:60,h:40,d(c,w,h){RR(c,-w/2,-h/2,w,h,4);FS(c);RR(c,-w/2+4,-h/2+4,w-8,h-8,3);thin(c,()=>c.stroke());[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{circ(c,a*(w/2-4),b*(h/2-4),2.5);c.stroke()})}},
+/* Cucina */
+{id:'cucinaL',n:'Cucina ad L',cat:'Cucina',w:300,h:240,p:{ch:'sx',lv:'lungo',fu:'corto'},sz:[[240,200,'240×200'],[300,240,'300×240'],[360,270,'360×270']],
+ o:[{k:'ch',n:'Lato corto',t:'sel',o:[['sx','Sinistra'],['dx','Destra']]},{k:'lv',n:'Lavello',t:'sel',o:[['lungo','Lato lungo'],['corto','Lato corto'],['no','Nessuno']]},{k:'fu',n:'Piano cottura',t:'sel',o:[['lungo','Lato lungo'],['corto','Lato corto'],['no','Nessuno']]}],
+ d(c,w,h,p){const d=60;c.save();if(p.ch==='dx')c.scale(-1,1);const X0=-w/2,Y0=-h/2;c.beginPath();c.moveTo(X0,Y0);c.lineTo(w/2,Y0);c.lineTo(w/2,Y0+d);c.lineTo(X0+d,Y0+d);c.lineTo(X0+d,h/2);c.lineTo(X0,h/2);c.closePath();FS(c);
+  thin(c,()=>dsh(c,()=>{for(let x=X0+d+60;x<w/2-1;x+=60)ln(c,x,Y0,x,Y0+d);for(let y=Y0+d+60;y<h/2-1;y+=60)ln(c,X0,y,X0+d,y);ln(c,X0+d,Y0,X0+d,Y0+d);ln(c,X0,Y0+d,X0+d,Y0+d)},4,4));
+  const sink=(cx,cy,v)=>{if(v)RR(c,cx-(d-22)/2,cy-26,d-22,52,5);else RR(c,cx-26,cy-(d-22)/2,52,d-22,5);c.stroke();circ(c,cx,cy,2);c.stroke()};
+  const hob=(cx,cy)=>{[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{circ(c,cx+a*13,cy+b*13,7);c.stroke()})};
+  const tp=[X0+d+(w-d)*.5,Y0+d/2],sd=[X0+d/2,Y0+d+(h-d)*.5];
+  if(p.lv==='lungo')sink(tp[0],tp[1],false);else if(p.lv==='corto')sink(sd[0],sd[1],true);
+  if(p.fu==='lungo')hob(tp[0]+(p.lv==='lungo'?70:0),tp[1]);else if(p.fu==='corto')hob(sd[0],sd[1]+(p.lv==='corto'?70:0));c.restore()}},
+{id:'cucinaU',n:'Cucina a U',cat:'Cucina',w:300,h:300,p:{fu:'fondo'},sz:[[270,270,'270×270'],[300,300,'300×300'],[360,300,'360×300']],o:[{k:'fu',n:'Piano cottura',t:'sel',o:[['fondo','Lato di fondo'],['sx','Lato sinistro'],['dx','Lato destro'],['no','Nessuno']]}],
+ d(c,w,h,p){const d=60;c.beginPath();c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,h/2);c.lineTo(w/2-d,h/2);c.lineTo(w/2-d,-h/2+d);c.lineTo(-w/2+d,-h/2+d);c.lineTo(-w/2+d,h/2);c.lineTo(-w/2,h/2);c.closePath();FS(c);
+  thin(c,()=>dsh(c,()=>{for(let x=-w/2+d+60;x<w/2-d-1;x+=60)ln(c,x,-h/2,x,-h/2+d);for(let y=-h/2+d+60;y<h/2-1;y+=60){ln(c,-w/2,y,-w/2+d,y);ln(c,w/2-d,y,w/2,y)}ln(c,-w/2+d,-h/2,-w/2+d,-h/2+d);ln(c,w/2-d,-h/2,w/2-d,-h/2+d)},4,4));
+  RR(c,-26,-h/2+11,52,d-22,5);c.stroke();circ(c,0,-h/2+d/2,2);c.stroke();
+  const hob=(cx,cy)=>{[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{circ(c,cx+a*13,cy+b*13,7);c.stroke()})};
+  if(p.fu==='fondo')hob(-w*.2,-h/2+d/2);else if(p.fu==='sx')hob(-w/2+d/2,h*.1);else if(p.fu==='dx')hob(w/2-d/2,h*.1)}},
+{id:'colfrigo',n:'Colonna frigo',cat:'Cucina',w:60,h:65,p:{ta:1},o:[{k:'ta',n:'Congelatore',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{Rc(c,-w/2+4,-h/2+4,w-8,h-10);c.stroke()});if(p.ta)ln(c,-w/2,h*.1,w/2,h*.1);knob(c,w/2-8,h/2-4)}},
+{id:'cappa',n:'Cappa',cat:'Cucina',w:90,h:50,p:{is:0},o:[{k:'is',n:'Ad isola',t:'bool',on:(it)=>{it.h=it.p.is?60:50}}],
+ d(c,w,h,p){dsh(c,()=>{Rc(c,-w/2,-h/2,w,h);c.stroke();circ(c,0,0,Math.min(w,h)*.28);c.stroke();ln(c,-w/2,-h/2,w/2,h/2);ln(c,-w/2,h/2,w/2,-h/2)},p.is?7:4,3)}},
+{id:'dispensa',n:'Colonna dispensa',cat:'Cucina',w:60,h:60,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>dsh(c,()=>{for(let k=1;k<4;k++)ln(c,-w/2+4,-h/2+h*k/4,w/2-4,-h/2+h*k/4)},3,2));ln(c,0,-h/2,0,h/2)}},
+{id:'basecass',n:'Base cassettiera',cat:'Cucina',w:60,h:60,p:{c:3},o:[{k:'c',n:'Cassetti',t:'int',min:2,max:5}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);ln(c,-w/2,h/2-4,w/2,h/2-4);const n=Math.max(2,+p.c||3);for(let k=1;k<n;k++){const y=-h/2+h*k/n;thin(c,()=>ln(c,-w/2+4,y,w/2-4,y))}}},
+{id:'baseang',n:'Base angolare',cat:'Cucina',w:90,h:90,p:{ca:1},o:[{k:'ca',n:'Carosello',t:'bool'}],
+ d(c,w,h,p){const d=60;c.beginPath();c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,-h/2+d);c.lineTo(-w/2+d,-h/2+d);c.lineTo(-w/2+d,h/2);c.lineTo(-w/2,h/2);c.closePath();FS(c);if(p.ca){circ(c,-w/2+d*.55,-h/2+d*.55,d*.32);thin(c,()=>c.stroke())}}},
+/* Bagno */
+{id:'docciatondo',n:'Piatto doccia (forme)',cat:'Bagno',w:90,h:90,p:{f:'quarto'},sz:[[80,80,'80×80'],[90,90,'90×90'],[100,100,'100×100'],[90,120,'90×120']],o:[{k:'f',n:'Forma',t:'sel',o:[['quarto','Angolare tondo'],['mezza','Semicircolare'],['esa','Esagonale'],['quad','Quadrato']]}],
+ d(c,w,h,p){c.beginPath();if(p.f==='quarto'){c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.ellipse(-w/2,-h/2,w,h,0,0,Math.PI/2);c.closePath()}else if(p.f==='mezza'){c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.ellipse(0,-h/2,w/2,h,0,0,Math.PI);c.closePath()}else if(p.f==='esa'){const a=w*.25;c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,-h/2+a);c.lineTo(w/2-a*2,h/2);c.lineTo(-w/2+a*2,h/2);c.lineTo(-w/2,-h/2+a);c.closePath()}else c.rect(-w/2,-h/2,w,h);FS(c);circ(c,p.f==='quarto'?-w*.15:0,p.f==='quarto'?-h*.15:0,4);FS(c)}},
+{id:'vascafree',n:'Vasca freestanding',cat:'Bagno',w:170,h:80,sz:[[160,75,'160×75'],[170,80,'170×80'],[180,85,'180×85']],
+ d(c,w,h){ell(c,0,0,w/2,h/2);FS(c);ell(c,0,0,w/2-8,h/2-8);thin(c,()=>c.stroke());circ(c,-w/2+22,0,3);c.stroke();ln(c,w/2-14,-8,w/2-14,8)}},
+{id:'mobilelav',n:'Mobile con lavabo',cat:'Bagno',w:100,h:46,p:{v:1,c:2},sz:[[60,46,'60 cm'],[80,46,'80 cm'],[100,46,'100 cm'],[120,46,'120 cm'],[140,46,'140 cm']],o:[{k:'v',n:'Lavabi',t:'sel',o:SL([1,2])},{k:'c',n:'Cassetti',t:'int',min:0,max:4}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.v||1;for(let k=0;k<n;k++){const x=-w/2+w*(k+.5)/n;ell(c,x,0,Math.min(w/n*.36,24),h*.32);c.stroke();circ(c,x,-h/2+6,1.8);c.stroke()}const m=+p.c|0;for(let k=1;k<=m;k++)thin(c,()=>ln(c,-w/2+3,h/2-3*k,w/2-3,h/2-3*k))}},
+{id:'colbagno',n:'Colonna bagno',cat:'Bagno',w:35,h:35,p:{ri:3},o:[{k:'ri',n:'Ripiani',t:'int',min:1,max:6}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.ri||3;thin(c,()=>dsh(c,()=>{for(let k=1;k<=n;k++)ln(c,-w/2+3,-h/2+h*k/(n+1),w/2-3,-h/2+h*k/(n+1))},3,2))}},
+{id:'wccass',n:'WC con cassetta',cat:'Bagno',w:40,h:72,d(c,w,h){RR(c,-w/2,-h/2,w,h*.25,4);FS(c);ell(c,0,h*.14,w*.45,h*.33);FS(c);ell(c,0,h*.16,w*.3,h*.22);thin(c,()=>c.stroke());circ(c,0,-h*.38,3);c.stroke()}},
+/* Lavanderia */
+{id:'lavatoio',n:'Lavatoio',cat:'Lavanderia',w:70,h:50,p:{r:1},o:[{k:'r',n:'Asse di lavaggio',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);RR(c,-w/2+6,-h/2+6,w-12,h-12,6);c.stroke();if(p.r)thin(c,()=>{for(let k=1;k<6;k++)ln(c,-w/2+8,-h/2+6+(h-12)*k/6,w/2-8,-h/2+6+(h-12)*k/6)});circ(c,0,-h/2+3,1.8);c.stroke()}},
+{id:'stendino',n:'Stendino',cat:'Lavanderia',w:160,h:55,p:{f:6},o:[{k:'f',n:'Fili',t:'int',min:3,max:10}],
+ d(c,w,h,p){dsh(c,()=>{Rc(c,-w/2,-h/2,w,h);c.stroke()},5,3);const n=+p.f||6;thin(c,()=>{for(let k=1;k<n;k++){const y=-h/2+h*k/n;ln(c,-w/2,y,w/2,y)}})}},
+{id:'lavasc',n:'Lavatrice + asciugatrice',cat:'Lavanderia',w:60,h:60,p:{t:'sov'},o:[{k:'t',n:'Disposizione',t:'sel',o:[['sov','Sovrapposte'],['aff','Affiancate']],on:(it)=>{it.w=it.p.t==='aff'?120:60;it.h=60}}],
+ d(c,w,h,p){if(p.t==='aff'){const mw=w/2;[0,1].forEach(k=>{const cx=-w/2+mw*(k+.5);Rc(c,cx-mw/2,-h/2,mw,h);FS(c);circ(c,cx,4,mw*.3);c.stroke();if(k)dsh(c,()=>{circ(c,cx,4,mw*.2);c.stroke()},3,2)})}else{Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,4,w*.3);c.stroke();dsh(c,()=>{circ(c,0,4,w*.2);c.stroke()},3,2);ln(c,-w/2+4,-h/2+5,w/2-4,-h/2+5)}}},
+{id:'stiro',n:'Asse da stiro',cat:'Lavanderia',w:120,h:38,d(c,w,h){RR(c,-w/2,-h/2,w,h,h/2);FS(c);RR(c,-w/2+6,-h/2+6,w*.78,h-12,(h-12)/2);thin(c,()=>c.stroke())}},
+/* Studio */
+{id:'postaz',n:'Postazione PC',cat:'Studio',w:140,h:70,p:{m:1,se:1},sz:[[120,60,'120×60'],[140,70,'140×70'],[160,80,'160×80']],o:[{k:'m',n:'Monitor',t:'int',min:0,max:3},{k:'se',n:'Sedia',t:'bool'}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=+p.m|0;for(let k=0;k<n;k++){const mw=Math.min(50,w/Math.max(1,n)*.8),x=-w/2+w*(k+.5)/n;Rc(c,x-mw/2,-h/2+4,mw,4);FS(c)}RR(c,-w*.18,h/2-20,w*.36,10,2);thin(c,()=>c.stroke());if(p.se)chair(c,0,h/2+16,0)}},
+{id:'scrivdir',n:'Scrivania direzionale',cat:'Studio',w:180,h:90,p:{rt:'dx',se:1},sz:[[160,80,'160×80'],[180,90,'180×90'],[200,100,'200×100']],o:[{k:'rt',n:'Ritorno',t:'sel',o:[['no','Nessuno'],['sx','Sinistra'],['dx','Destra']]},{k:'se',n:'Sedia',t:'bool'}],
+ d(c,w,h,p){const d=Math.min(80,h*.9),rw=Math.min(55,w*.3);if(p.rt==='no'){Rc(c,-w/2,-h/2,w,d);FS(c)}else{c.beginPath();if(p.rt==='sx'){c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,-h/2+d);c.lineTo(-w/2+rw,-h/2+d);c.lineTo(-w/2+rw,h/2);c.lineTo(-w/2,h/2)}else{c.moveTo(-w/2,-h/2);c.lineTo(w/2,-h/2);c.lineTo(w/2,h/2);c.lineTo(w/2-rw,h/2);c.lineTo(w/2-rw,-h/2+d);c.lineTo(-w/2,-h/2+d)}c.closePath();FS(c)}if(p.se)chair(c,p.rt==='sx'?w*.12:-w*.12,-h/2+d+18,0)}},
+{id:'tavoloriu',n:'Tavolo riunioni',cat:'Studio',w:240,h:110,pad:42,p:{f:'rett',s:8},sz:[[160,90,'160×90'],[200,100,'200×100'],[240,110,'240×110'],[300,120,'300×120']],o:[{k:'f',n:'Forma',t:'sel',o:[['rett','Rettangolare'],['ovale','Ovale'],['tondo','Tondo']]},{k:'s',n:'Sedie',t:'int',min:0,max:16}],
+ d(c,w,h,p){tableChairs(c,w,h,p);shape(c,w,h,p.f,3);FS(c);shape(c,w-10,h-10,p.f,2);thin(c,()=>c.stroke())}},
+{id:'armarch',n:'Armadio archivio',cat:'Studio',w:100,h:45,p:{a:2,tp:'bat'},o:[{k:'a',n:'Ante',t:'int',min:1,max:5},{k:'tp',n:'Apertura',t:'sel',o:[['bat','Battente'],['sco','Scorrevole']]}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.a||2);if(p.tp==='sco'){ln(c,-w/2,h/2-4,w*.05,h/2-4);ln(c,-w*.05,h/2-9,w/2,h/2-9)}else{ln(c,-w/2,h/2-4,w/2,h/2-4);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}}thin(c,()=>dsh(c,()=>ln(c,-w/2+4,-2,w/2-4,-2)))}},
+{id:'scaffale',n:'Scaffale aperto',cat:'Studio',also:['Lavanderia','Varie'],w:100,h:35,p:{m:3},sz:[[60,30,'60 cm'],[100,35,'100 cm'],[150,35,'150 cm'],[200,40,'200 cm']],o:[{k:'m',n:'Moduli',t:'int',min:1,max:8}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.m||3);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}thin(c,()=>dsh(c,()=>ln(c,-w/2+3,0,w/2-3,0),3,2))}},
+{id:'poltdir',n:'Poltrona direzionale',cat:'Studio',w:65,h:65,d(c,w,h){RR(c,-w/2,-h/2+8,w,h-8,12);FS(c);RR(c,-w/2+6,-h/2+14,w-12,h-26,8);thin(c,()=>c.stroke());RR(c,-w/2-2,-h/2+14,6,h-24,3);FS(c);RR(c,w/2-4,-h/2+14,6,h-24,3);FS(c)}},
+{id:'stampante',n:'Stampante / plotter',cat:'Studio',w:80,h:60,p:{bs:0},o:[{k:'bs',n:'Su mobiletto',t:'bool'}],
+ d(c,w,h,p){if(p.bs){Rc(c,-w/2-5,-h/2-5,w+10,h+10);FS(c)}Rc(c,-w/2,-h/2,w,h);FS(c);Rc(c,-w/2+6,-h/2+6,w-12,12);thin(c,()=>c.stroke());ln(c,-w/2+6,h/2-14,w/2-6,h/2-14)}},
+/* Ingresso */
+{id:'scarpiera',n:'Scarpiera',cat:'Ingresso',w:80,h:35,p:{a:2},sz:[[60,30,'60 cm'],[80,35,'80 cm'],[100,35,'100 cm'],[120,35,'120 cm']],o:[{k:'a',n:'Ante',t:'int',min:1,max:4}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(1,+p.a||2);ln(c,-w/2,h/2-4,w/2,h/2-4);for(let k=1;k<n;k++){const x=-w/2+w*k/n;ln(c,x,-h/2,x,h/2)}thin(c,()=>dsh(c,()=>ln(c,-w/2+4,-2,w/2-4,-2),3,2))}},
+{id:'appendiab',n:'Appendiabiti a muro',cat:'Ingresso',w:80,h:12,p:{g:5},sz:[[60,12,'60 cm'],[80,12,'80 cm'],[120,12,'120 cm']],o:[{k:'g',n:'Ganci',t:'int',min:2,max:10}],
+ d(c,w,h,p){Rc(c,-w/2,-h/2,w,h);FS(c);const n=Math.max(2,+p.g||5);for(let k=0;k<n;k++){circ(c,-w/2+w*(k+.5)/n,h/2-3,2.2);FS(c)}}},
+{id:'pancaing',n:'Panca ingresso',cat:'Ingresso',w:100,h:38,p:{cs:1},sz:[[80,35,'80 cm'],[100,38,'100 cm'],[140,38,'140 cm']],o:[{k:'cs',n:'Cuscino',t:'bool'}],
+ d(c,w,h,p){RR(c,-w/2,-h/2,w,h,4);FS(c);if(p.cs){RR(c,-w/2+5,-h/2+5,w-10,h-10,4);thin(c,()=>c.stroke())}thin(c,()=>ln(c,-w/2+4,h/2-8,w/2-4,h/2-8))}},
+{id:'portaomb',n:'Portaombrelli',cat:'Ingresso',w:25,h:25,d(c,w,h){circ(c,0,0,w/2);FS(c);circ(c,0,0,w*.36);thin(c,()=>c.stroke())}},
+{id:'zerbino',n:'Zerbino',cat:'Ingresso',w:60,h:40,d(c,w,h){dsh(c,()=>{RR(c,-w/2,-h/2,w,h,3);c.save();c.fillStyle='rgba(148,163,184,.25)';FS(c);c.restore()},4,3);thin(c,()=>{for(let k=1;k<6;k++){const x=-w/2+w*k/6;ln(c,x,-h/2+3,x-5,h/2-3)}})}},
+/* Esterno */
+{id:'tavgiard',n:'Tavolo da giardino',cat:'Esterno',w:180,h:90,pad:42,p:{f:'rett',s:6},sz:[[120,80,'120×80'],[160,90,'160×90'],[200,100,'200×100'],[110,110,'Tondo Ø110']],o:[{k:'f',n:'Forma',t:'sel',o:[['rett','Rettangolare'],['tondo','Tondo'],['ovale','Ovale']]},{k:'s',n:'Sedie',t:'int',min:0,max:12}],
+ d(c,w,h,p){tableChairs(c,w,h,p);shape(c,w,h,p.f,3);FS(c);thin(c,()=>dsh(c,()=>{shape(c,w-12,h-12,p.f,2);c.stroke()},4,3))}},
+{id:'ombrellone',n:'Ombrellone',cat:'Esterno',w:250,h:250,p:{dm:250},o:[{k:'dm',n:'Diametro',t:'sel',o:[[200,'200 cm'],[250,'250 cm'],[300,'300 cm'],[350,'350 cm']],on:(it)=>{it.w=it.h=+it.p.dm}}],
+ d(c,w,h){dsh(c,()=>{ell(c,0,0,w/2,h/2);c.save();c.fillStyle='rgba(125,211,252,.18)';FS(c);c.restore()},8,5);thin(c,()=>{for(let k=0;k<8;k++){const a=k*Math.PI/4;ln(c,0,0,Math.cos(a)*w/2,Math.sin(a)*h/2)}});circ(c,0,0,4);FS(c)}},
+{id:'sdraio',n:'Sdraio / lettino',cat:'Esterno',w:60,h:190,p:{rc:1},o:[{k:'rc',n:'Schienale alzato',t:'bool'}],
+ d(c,w,h,p){RR(c,-w/2,-h/2,w,h,6);FS(c);const y=-h/2+(p.rc?70:35);ln(c,-w/2,y,w/2,y);RR(c,-w/2+6,-h/2+6,w-12,Math.max(10,y+h/2-12),4);thin(c,()=>c.stroke())}},
+{id:'barbecue',n:'Barbecue',cat:'Esterno',w:70,h:50,p:{f:'rett'},o:[{k:'f',n:'Forma',t:'sel',o:[['rett','Rettangolare'],['tondo','Tondo']]}],
+ d(c,w,h,p){shape(c,w,h,p.f,4);FS(c);thin(c,()=>{for(let k=1;k<7;k++){const x=-w/2+w*k/7;if(p.f==='rett')ln(c,x,-h/2+4,x,h/2-4);else{const r=Math.sqrt(Math.max(0,1-(x/(w/2))**2))*h/2-3;ln(c,x,-r,x,r)}}})}},
+{id:'vaso',n:'Vaso con pianta',cat:'Esterno',w:50,h:50,d(c,w,h){circ(c,0,0,w/2);FS(c);circ(c,0,0,w*.38);thin(c,()=>c.stroke());c.save();c.fillStyle='rgba(74,160,110,.25)';circ(c,0,0,w*.3);FS(c);c.restore()}},
+{id:'albero',n:'Albero',cat:'Esterno',w:250,h:250,d(c,w,h){dsh(c,()=>{c.beginPath();const n=14,R=w/2;for(let k=0;k<=n;k++){const a=k*Math.PI*2/n,r=R*(1-.07*(k%2));const x=Math.cos(a)*r,y=Math.sin(a)*(h/2)*(r/R);k?c.lineTo(x,y):c.moveTo(x,y)}c.closePath();c.save();c.fillStyle='rgba(74,160,110,.18)';FS(c);c.restore()},6,4);circ(c,0,0,Math.min(w,h)*.04+2);FS(c)}},
+{id:'auto',n:'Auto',cat:'Esterno',w:180,h:450,d(c,w,h){RR(c,-w/2,-h/2,w,h,45);FS(c);RR(c,-w/2+14,-h/2+85,w-28,h*.18,12);c.stroke();RR(c,-w/2+14,h/2-125,w-28,60,12);c.stroke();RR(c,-w/2+10,-h/2+140,w-20,h-290,10);thin(c,()=>c.stroke());[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{Rc(c,a*(w/2)-(a>0?0:10),b*h*.3-20,10,40);c.stroke()})}},
+{id:'postoauto',n:'Posto auto',cat:'Esterno',w:250,h:500,d(c,w,h){dsh(c,()=>{Rc(c,-w/2,-h/2,w,h);c.stroke()},10,6);thin(c,()=>{ln(c,0,h/2-30,0,-h/2+30);ln(c,0,-h/2+30,-14,-h/2+55);ln(c,0,-h/2+30,14,-h/2+55)})}},
+{id:'piscina',n:'Piscina',cat:'Esterno',w:400,h:800,p:{f:'rett'},sz:[[300,600,'3×6 m'],[400,800,'4×8 m'],[500,1000,'5×10 m']],o:[{k:'f',n:'Forma',t:'sel',o:[['rett','Rettangolare'],['ovale','Ovale'],['rotonda','Rotonda']],on:(it)=>{if(it.p.f==='rotonda')it.h=it.w}}],
+ d(c,w,h,p){const s=(a,b,r)=>{if(p.f==='rett')RR(c,-a/2,-b/2,a,b,r);else ell(c,0,0,a/2,b/2)};c.save();c.fillStyle='rgba(125,211,252,.22)';s(w,h,14);FS(c);c.restore();s(w-30,h-30,10);thin(c,()=>c.stroke());if(p.f==='rett')thin(c,()=>ln(c,-w/2+15,0,w/2-15,0))}},
+{id:'fioriera',n:'Fioriera',cat:'Esterno',w:120,h:40,sz:[[80,35,'80 cm'],[120,40,'120 cm'],[160,45,'160 cm']],d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);RR(c,-w/2+5,-h/2+5,w-10,h-10,3);thin(c,()=>c.stroke());c.save();c.fillStyle='rgba(74,160,110,.3)';for(let x=-w/2+14;x<w/2-8;x+=14){circ(c,x,0,5);c.fill()}c.restore()}},
+/* Varie */
+{id:'radiatore',n:'Radiatore',cat:'Varie',w:80,h:10,sz:[[60,10,'60 cm'],[80,10,'80 cm'],[120,10,'120 cm'],[160,10,'160 cm']],d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{for(let x=-w/2+5;x<w/2;x+=5)ln(c,x,-h/2,x,h/2)})}},
+{id:'pilastrot',n:'Pilastro tondo',cat:'Varie',w:30,h:30,d(c,w,h){circ(c,0,0,w/2);c.save();c.fillStyle='#2b2f36';FS(c);c.restore()}},
+{id:'ascensore',n:'Vano ascensore',cat:'Varie',w:150,h:160,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);dsh(c,()=>{Rc(c,-w/2+12,-h/2+12,w-24,h-24);c.stroke()},5,3);ln(c,-w/2,-h/2,w/2,h/2);ln(c,-w/2,h/2,w/2,-h/2)}},
+{id:'canna',n:'Canna fumaria',cat:'Varie',w:40,h:40,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);circ(c,0,0,w*.28);c.stroke();ln(c,-w/2,-h/2,w/2,h/2);ln(c,-w/2,h/2,w/2,-h/2)}},
+{id:'quadro',n:'Quadro elettrico',cat:'Varie',w:40,h:12,d(c,w,h){Rc(c,-w/2,-h/2,w,h);FS(c);thin(c,()=>{ln(c,-w/2+4,h/2-3,w/2-4,h/2-3);ln(c,-w*.1,-h/2,-w*.1,h/2)})}},
 /* Aperture (nella barra strumenti) */
 {id:'door',n:'Porta battente',cat:'Porte',w:80,h:16,lock:1,tb:(w,h)=>[-w/2,-h/2,w/2,h/2+w],sz:[[60,0,'60'],[70,0,'70'],[80,0,'80'],[90,0,'90'],[100,0,'100']],
  d(c,w,h){jambs(c,w,h);ln(c,-w/2,h/2,-w/2,h/2+w);thin(c,()=>{c.beginPath();c.arc(-w/2,h/2,w,0,Math.PI/2);c.stroke()})}},
@@ -464,13 +614,29 @@ document.querySelectorAll('.tbtn:not([data-sp])').forEach(b=>b.classList.toggle(
 document.querySelectorAll('#lib .blk').forEach(b=>b.classList.toggle('on',t==='place'&&ghostBlock&&b.dataset.key===ghostBlock.key));obar();$('#stHelp').textContent=(t==='select'&&HELP['select_'+selMode])||HELP[t]||'';cv.style.cursor=t==='hand'?'grab':t==='select'?'default':t==='move'?'move':'crosshair';draw()}
 let MYLIB=[];try{MYLIB=JSON.parse(localStorage.getItem('planimetria-mylib')||'[]')}catch(e){}
 function saveMyLib(){try{localStorage.setItem('planimetria-mylib',JSON.stringify(MYLIB))}catch(e){}if(DB&&ready)col().doc('mylib').set({name:'__mylib',updatedAt:Date.now(),by:TAB,data:JSON.stringify(MYLIB)}).catch(()=>{});buildLib()}
-function buildLib(){const q=$('#search').value.toLowerCase();const box=$('#lib');box.innerHTML='';
-const groups=[];const mine=MYLIB.filter(m=>!q||m.name.toLowerCase().includes(q));if(mine.length)groups.push(['I miei arredi',mine.map((m,ix)=>({key:'my'+ix,def:LIBMAP[m.bid],p:m.p,label:m.name,g:{id:m.bid,w:m.w,h:m.h,p:m.p,name:m.name,mir:m.mir,key:'my'+ix},del:ix})).filter(x=>x.def)]);
-let cur=null;LIB.filter(d=>!d.lock&&(!q||d.n.toLowerCase().includes(q)||d.cat.toLowerCase().includes(q))).forEach(d=>{if(!cur||cur[0]!==d.cat){cur=[d.cat,[]];groups.push(cur)}cur[1].push({key:d.id,def:d,label:d.n,g:{id:d.id,key:d.id}})});
-groups.forEach(([cat,list])=>{const h=document.createElement('div');h.className='cat';h.textContent=cat;box.appendChild(h);const grid=document.createElement('div');grid.className='lib';box.appendChild(grid);
-list.forEach(x=>{const e=document.createElement('div');e.className='blk';e.dataset.key=x.key;const c=document.createElement('canvas');const dd=x.g.w?Object.assign({},x.def,{w:x.g.w,h:x.g.h}):x.def;thumb(c,dd,x.p,88,60);e.appendChild(c);const sp=document.createElement('div');sp.textContent=x.label;e.appendChild(sp);
-if(x.del!=null){const del=document.createElement('span');del.className='x';del.textContent='✕';del.title='Rimuovi dai miei arredi';del.onclick=ev=>{ev.stopPropagation();MYLIB.splice(x.del,1);saveMyLib()};e.appendChild(del)}
-e.onclick=()=>startPlace(Object.assign({},x.g));grid.appendChild(e)})})}
+/* ---------- tendina arredi: menu degli ambienti con frecce, ricerca e schede ---------- */
+const ENVS=['Camera','Cameretta','Soggiorno','Pranzo','Cucina','Bagno','Lavanderia','Studio','Ingresso','Esterno','Varie'];
+let ENV='Tutti';try{ENV=localStorage.getItem('planimetria-env')||'Tutti'}catch(e){}
+const envList=()=>['Tutti'].concat(MYLIB.length?['I miei arredi']:[]).concat(ENVS);
+const catsOf=d=>[d.cat].concat(d.also||[]);
+function setEnv(e){ENV=e;try{localStorage.setItem('planimetria-env',e)}catch(er){}$('#search').value='';buildLib();const on=document.querySelector('#envChips button.on');if(on&&on.scrollIntoView)on.scrollIntoView({inline:'center',block:'nearest'});const lf=$('#left');if(lf)lf.scrollTop=0}
+function envStep(d){const L=envList(),i=Math.max(0,L.indexOf(ENV));setEnv(L[(i+d+L.length)%L.length])}
+function buildLib(){const q=$('#search').value.toLowerCase().trim(),box=$('#lib');box.innerHTML='';const L=envList();if(!L.includes(ENV))ENV='Tutti';
+ const ch=$('#envChips');ch.innerHTML='';L.forEach(e=>{const b=document.createElement('button');b.textContent=e;if(e===ENV&&!q)b.classList.add('on');b.onclick=()=>setEnv(e);ch.appendChild(b)});
+ $('#envName').textContent=q?'Risultati della ricerca':ENV+'  ('+(L.indexOf(ENV)+1)+'/'+L.length+')';
+ const groups=[],seen=new Set(),only=(!q&&ENV!=='Tutti')?ENV:null;
+ if(ENV==='Tutti'||ENV==='I miei arredi'||q){const mine=MYLIB.filter(m=>!q||m.name.toLowerCase().includes(q));if(mine.length)groups.push(['I miei arredi',mine.map((m,ix)=>({key:'my'+ix,def:LIBMAP[m.bid],p:m.p,label:m.name,g:{id:m.bid,w:m.w,h:m.h,p:m.p,name:m.name,mir:m.mir,key:'my'+ix},del:ix})).filter(x=>x.def)])}
+ if(only!=='I miei arredi')ENVS.forEach(cat=>{if(only&&cat!==only)return;const list=[];LIB.forEach(d=>{if(d.lock||!catsOf(d).includes(cat))return;if(q&&!(d.n.toLowerCase().includes(q)||cat.toLowerCase().includes(q)))return;if(q){if(seen.has(d.id))return;seen.add(d.id)}list.push({key:d.id,def:d,label:d.n,g:{id:d.id,key:d.id}})});if(list.length)groups.push([cat,list])});
+ if(!groups.length){const e=document.createElement('div');e.className='hint';e.textContent=ENV==='I miei arredi'&&!q?'Nessun arredo salvato.':'Nessun arredo trovato.';box.appendChild(e);return}
+ groups.forEach(([cat,list])=>{if(!only||q){const h=document.createElement('div');h.className='cat';h.textContent=cat;box.appendChild(h)}const grid=document.createElement('div');grid.className='lib';box.appendChild(grid);
+ list.forEach(x=>{const e=document.createElement('div');e.className='blk';e.dataset.key=x.key;const c=document.createElement('canvas');const dd=x.g.w?Object.assign({},x.def,{w:x.g.w,h:x.g.h}):x.def;thumb(c,dd,x.p,88,60);e.appendChild(c);const sp=document.createElement('div');sp.textContent=x.label;e.appendChild(sp);
+ if(x.del!=null){const del=document.createElement('span');del.className='x';del.textContent='✕';del.title='Rimuovi dai miei arredi';del.onclick=ev=>{ev.stopPropagation();MYLIB.splice(x.del,1);saveMyLib()};e.appendChild(del)}
+ e.onclick=()=>startPlace(Object.assign({},x.g));grid.appendChild(e)})})}
+/* scorrimento con un gesto: trascina a destra/sinistra sull'elenco per cambiare ambiente */
+(()=>{const el=$('#lib');if(!el)return;let x0=0,y0=0,t0=0,on=false;
+ el.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now();on=true},{passive:true});
+ el.addEventListener('touchend',e=>{if(!on)return;on=false;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;if(Date.now()-t0<600&&Math.abs(dx)>70&&Math.abs(dy)<40)envStep(dx<0?1:-1)},{passive:true});
+ $('#envPrev').onclick=()=>envStep(-1);$('#envNext').onclick=()=>envStep(1)})();
 
 /* ---------- snap ---------- */
 function snapPoints(noWalls){const P=[];S.items.forEach(i=>{if(!vis(i)||(noWalls&&i.t==='wall'))return;if(i.pts)i.pts.forEach(p=>P.push(p));else if(i.t==='dim'){P.push(i.a,i.b)}});if(S.under&&S.under.vis&&L('sfondo').v&&underReady()&&UH.pts){const u=S.under;UH.pts.forEach(p=>P.push([u.x+p[0]*u.s,u.y+p[1]*u.s]))}return P}

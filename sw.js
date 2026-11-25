@@ -1,6 +1,6 @@
 /* Service worker: mette in cache l'app per l'uso offline.
    Quando pubblichi una nuova versione, cambia il numero qui sotto. */
-const VERSION = 'planimetria-v13';
+const VERSION = 'planimetria-v14';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 /* cache:'reload' salta la cache HTTP del browser (GitHub Pages la tiene 10 minuti):
