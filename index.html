@@ -45,7 +45,17 @@ h4:first-child{margin-top:0}
 #pop .selopt{display:flex;align-items:center;gap:10px;width:240px;text-align:left;padding:9px 10px;font-size:13px}#pop .selopt svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}#pop .selopt span{display:flex;flex-direction:column;gap:3px}#pop .selopt small{font-size:11px;opacity:.75}
 .tbtn.dis{opacity:.4}
 #flrPane{display:none}#app.showF #libPane{display:none}#app.showF #flrPane{display:block}
-#pop .mvh{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 2px}#pop .mvrow{display:flex;flex-wrap:wrap;gap:6px}#pop .mvrow button{min-height:42px;padding:0 11px;font-size:13px}
+#pop .mvh{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 4px}
+#pop .mvgrid{display:grid;grid-template-columns:repeat(4,62px);gap:6px}
+#pop .mvgrid .sq{width:62px;height:62px;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;line-height:1.1}
+#pop .mvgrid .sq svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#spad{position:absolute;right:8px;bottom:16px;display:none;width:250px;background:var(--panel);border:1px solid #fca5a5;border-radius:14px;padding:8px;box-shadow:0 8px 24px rgba(220,38,38,.2);z-index:6;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+#spad .kpH{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}#spad .kpH b{font-size:12px;color:#b91c1c}#spad .kpH button{min-height:32px;min-width:40px;padding:0}
+#spad .spBox{background:var(--sky);border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin-bottom:6px;text-align:right}#spad .spVal{font-size:30px;line-height:1.1}#spad .spVal b{font-weight:800}#spad .spVal span{font-size:16px;margin-left:3px;color:var(--mute)}#spad small{display:block;font-size:10.5px;color:var(--mute);text-align:left}
+#spad .spChips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}#spad .spChips button{min-height:32px;padding:0 8px;font-size:12px;font-weight:700;border-radius:16px}
+#spad .spK{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}#spad .spK button{min-height:44px;font-size:18px;font-weight:700;border-radius:10px;padding:0}#spad .spK .kok{grid-column:4;grid-row:3 / span 2;font-size:14px}
+#spad .spTh{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--ink)}
+@media (max-height:700px){#spad .spK button{min-height:36px}#spad .spVal{font-size:24px}}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.fgrid .blk{padding:3px;width:auto;font-size:11px}
 #flr .row label{flex:0 0 96px;font-size:12px}#flr .row input,#flr .row select,#props .row select{flex:1;min-width:0}
 #flr h4{margin:10px 0 4px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
@@ -190,7 +200,8 @@ body.dark #lpop,body.dark #pop,body.dark #obar{border-color:#1e3a5f}
   <div id="lib"></div>
 </div><div id="flrPane"><div class="libhead"><h4>Pavimenti</h4><button id="flrClose" title="Chiudi la tendina pavimenti">«</button></div><div id="flr"></div></div></aside>
 <main><div id="obar"></div><div id="lbar"></div><div id="cvw"><canvas id="cv"></canvas><div id="dbar"><button class="pri" id="dOk">✓ Fine</button><button id="dClose" title="Chiudi la forma sul primo punto">⟲ Chiudi</button><button id="dBack">↶ Indietro</button><button id="dCancel">✕ Annulla</button></div>
-<div id="kpad"><div class="kpH"><b>Misura</b><button id="kpMin" title="Riduci / apri">▾</button></div><div class="kpB"><div class="kpF"><button id="kpLen" class="kpf on"><small>Lunghezza</small><b id="kpLenV">—</b></button><button id="kpAng" class="kpf"><small>Angolo</small><b id="kpAngV">auto</b></button></div><div class="kpD"><button data-a="0" title="Destra">→</button><button data-a="90" title="Su">↑</button><button data-a="180" title="Sinistra">←</button><button data-a="270" title="Giù">↓</button></div><div class="kpK"></div></div></div></div></main>
+<div id="kpad"><div class="kpH"><b>Misura</b><button id="kpMin" title="Riduci / apri">▾</button></div><div class="kpB"><div class="kpF"><button id="kpLen" class="kpf on"><small>Lunghezza</small><b id="kpLenV">—</b></button><button id="kpAng" class="kpf"><small>Angolo</small><b id="kpAngV">auto</b></button></div><div class="kpD"><button data-a="0" title="Destra">→</button><button data-a="90" title="Su">↑</button><button data-a="180" title="Sinistra">←</button><button data-a="270" title="Giù">↓</button></div><div class="kpK"></div></div></div>
+<div id="spad"><div class="kpH"><b>Scala</b><button id="spX" title="Chiudi">✕</button></div><div class="spBox"><div class="spVal"><b id="spV">100</b><span>%</span></div><small id="spI"></small></div><div class="spChips"></div><div class="spK"></div><label class="spTh"><input type="checkbox" id="spTh"> Scala anche lo spessore dei muri</label></div></div></main>
 <aside id="right"><div id="props"></div></aside>
 <footer><span id="stPos">x 0 · y 0 cm</span><span id="stZoom"></span><span id="stHelp"></span><span class="tb"><button id="fFine">Fine disegno</button><button id="fRot">Ruota</button><button id="fDel">Elimina</button></span></footer>
 </div>
@@ -535,8 +546,8 @@ if(draft){drawDraft();drawCloseRing();drawDraftDots()}
 if(calib&&calib.a){const a=w2s(...calib.a),b=w2s(mouse.x,mouse.y);if(calib.b)Object.assign(b,w2s(...calib.b));ctx.strokeStyle='#dc2626';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(b[0],b[1]);ctx.stroke()}
 if(sel){const it=getItem(sel);if(it)drawHandles(it)}
 if(drag&&drag.k==='box'&&drag.moved){const a=w2s(drag.a[0],drag.a[1]),b=w2s(drag.b[0],drag.b[1]);ctx.save();ctx.fillStyle='rgba(2,132,199,.10)';ctx.strokeStyle='#0284c7';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.restore()}
-if(tool!=='select'&&tool!=='move'&&tool!=='hand'&&tool!=='place'&&tool!=='under')drawSnapMark();drawLoupe();
-$('#stZoom').textContent='zoom '+Math.round(view.z*100)+'%';lenSync();dbarSync();kpSync();}
+if(tool!=='select'&&tool!=='move'&&tool!=='hand'&&tool!=='place'&&tool!=='under')drawSnapMark();drawScalePreview();drawLoupe();
+$('#stZoom').textContent='zoom '+Math.round(view.z*100)+'%';lenSync();dbarSync();kpSync();spSync();}
 function drawGrid(W,H){const z=view.z;const x0=-view.x/z,y0=-view.y/z,x1=(W-view.x)/z,y1=(H-view.y)/z;
 const lines=(st,col)=>{ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();for(let x=Math.floor(x0/st)*st;x<=x1;x+=st){const sx=Math.round(x*z+view.x)+.5;ctx.moveTo(sx,0);ctx.lineTo(sx,H)}for(let y=Math.floor(y0/st)*st;y<=y1;y+=st){const sy=Math.round(y*z+view.y)+.5;ctx.moveTo(0,sy);ctx.lineTo(W,sy)}ctx.stroke()};
 if(S.gridOn){let st=S.grid;while(st*z<7)st*=2;lines(st,TH.gA1);lines(st*5,TH.gA2)}else{let st=10;while(st*z<9)st*=5;lines(st,TH.g1);lines(st*5,TH.g2)}
@@ -664,7 +675,7 @@ else if(S.items.length>f.n&&si>f.si){while(si>f.si)undo();states.length=si+1;if(
 function finishDraft(){if(!draft)return;const d=draft;draft=null;setTimeout(()=>{if(pendingRemote&&!draft&&!drag){const p=pendingRemote;pendingRemote=null;applyRemote(p)}},0);const n=d.pts.length;if(d.t==='wall'&&n>=2)S.items.push({id:S.nid++,t:'wall',pts:alignPts(d.pts,S.wallTh),th:S.wallTh});else if(d.t==='part'&&n>=2)S.items.push({id:S.nid++,t:'wall',k:'part',pts:alignPts(d.pts,S.partTh),th:S.partTh});else if(d.t==='line'&&n>=2)S.items.push({id:S.nid++,t:'line',pts:d.pts});else if(d.t==='room'&&n>=3)S.items.push({id:S.nid++,t:'room',pts:d.pts,name:'Stanza'});else if(d.t==='floor'&&n>=3)S.items.push({id:S.nid++,t:'floor',pts:d.pts,fp:JSON.parse(JSON.stringify(FLR.cfg))});else if(d.t==='dim'&&n>=2)S.items.push({id:S.nid++,t:'dim',a:d.pts[0],b:d.pts[1]});else{draw();return}commit();draw()}
 
 /* ---------- tastiera ---------- */
-addEventListener('keydown',e=>{const tg=e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT')return;if($('#modal').style.display==='flex')return;shiftDown=e.shiftKey;
+addEventListener('keydown',e=>{const tg=e.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT')return;if($('#modal').style.display==='flex'||SC.open)return;shiftDown=e.shiftKey;
 if(e.code==='Space'){spaceDown=true;e.preventDefault();return}
 const k=e.key.toLowerCase();
 if((e.ctrlKey||e.metaKey)&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
@@ -1328,17 +1339,68 @@ function moveBy(){const its=needSel();if(!its)return;const u=UN().n;
   const go=()=>{const dx=uFromE(parseFloat(b.querySelector('#mbx').value)||0),dy=uFromE(parseFloat(b.querySelector('#mby').value)||0);closeModal();its.forEach(i=>shiftItem(i,dx,dy));doneG()};
   b.querySelector('#mbok').onclick=go;b.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')go()});b.querySelector('#mbno').onclick=closeModal})}
 function rotAsk(){if(!needSel())return;askNumber('Ruota di (gradi, senso orario)',90,v=>{if(!isNaN(v)&&v)rotGrp(v)})}
+/* ---------- Scala: percentuale scritta col tastierino ---------- */
+const SC={open:false,buf:'',th:false};
+function scaleGrp(k,th){const its=needSel();if(!its)return;if(!(k>0)||Math.abs(k-1)<1e-9)return;
+ const B=groupBox(its),c=[(B[0]+B[2])/2,(B[1]+B[3])/2],rd=v=>Math.round(v*10)/10,f=p=>[rd(c[0]+(p[0]-c[0])*k),rd(c[1]+(p[1]-c[1])*k)];
+ its.forEach(i=>{mapItem(i,f);
+  if(i.t==='block'){const def=LIBMAP[i.bid]||{};i.w=rd(i.w*k);if(!def.lock)i.h=rd(i.h*k)}
+  else if(i.t==='text')i.fs=Math.max(1,rd(i.fs*k));
+  else if(i.t==='wall'&&th)i.th=Math.max(1,rd(i.th*k))});
+ doneG();toast('Scalato al '+(Math.round(k*10000)/100)+'%')}
+const spVal=()=>{const v=parseFloat((SC.buf||'100').replace(',','.'));return isNaN(v)?100:v};
+function scaleOpen(){if(!needSel())return;SC.open=true;SC.buf='';SC.th=false;const c=$('#spTh');if(c)c.checked=false;spSync();draw()}
+function spKey(k){
+ if(k==='bk')SC.buf=SC.buf.slice(0,-1);else if(k==='C')SC.buf='';
+ else if(k===','){if(!SC.buf)SC.buf='0';if(!/[.,]/.test(SC.buf))SC.buf+=','}
+ else if(k==='ok'){spApply();return}else if(k==='x'){SC.open=false}
+ else if(String(k).startsWith('=')){SC.buf=String(k).slice(1)}
+ else if(SC.buf.length<7)SC.buf+=k;
+ spSync();draw()}
+function spApply(){const v=spVal();if(!(v>0)){toast('Scrivi una percentuale maggiore di zero');return}SC.open=false;scaleGrp(v/100,SC.th);spSync()}
+function spSync(){const el=$('#spad');if(!el)return;const its=SC.open?gItems():[];if(SC.open&&!its.length)SC.open=false;el.style.display=SC.open?'block':'none';if(!SC.open)return;
+ const v=spVal(),B=groupBox(its),w=B[2]-B[0],h=B[3]-B[1];$('#spV').textContent=SC.buf||'100';$('#spI').textContent='Ingombro '+fmtScr(w)+' × '+fmtScr(h)+'  →  '+fmtScr(w*v/100)+' × '+fmtScr(h*v/100)}
+function spBuild(){const k=document.querySelector('#spad .spK'),ch=document.querySelector('#spad .spChips');if(!k)return;k.innerHTML='';ch.innerHTML='';
+ [50,75,90,110,125,150,200].forEach(p=>{const b=document.createElement('button');b.textContent=p+'%';b.onpointerdown=e=>{e.preventDefault();spKey('='+p)};ch.appendChild(b)});
+ [['7'],['8'],['9'],['bk','⌫'],['4'],['5'],['6'],['C'],['1'],['2'],['3'],['ok','Scala'],['0'],[',']].forEach(([key,label])=>{const b=document.createElement('button');b.textContent=label||key;if(key==='ok')b.className='pri kok';if(key==='0')b.style.gridColumn='1 / 3';b.onpointerdown=e=>{e.preventDefault();spKey(key)};k.appendChild(b)});
+ $('#spX').onpointerdown=e=>{e.preventDefault();spKey('x')};$('#spTh').onchange=e=>{SC.th=e.target.checked};
+ /* da tastiera fisica: cifre, virgola, Backspace, Invio, Esc (bloccano le altre scorciatoie finché il pannello è aperto) */
+ addEventListener('keydown',e=>{if(!SC.open||e.target.id==='spTh')return;const kk=e.key;let a=null;
+  if(/^[0-9]$/.test(kk))a=kk;else if(kk===','||kk==='.')a=',';else if(kk==='Backspace')a='bk';else if(kk==='Enter')a='ok';else if(kk==='Escape')a='x';
+  if(a!==null){e.preventDefault();e.stopImmediatePropagation();spKey(a)}},true)}
+function drawScalePreview(){if(!SC.open)return;const its=gItems();if(!its.length)return;const B=groupBox(its),c=[(B[0]+B[2])/2,(B[1]+B[3])/2],k=spVal()/100,
+ a=w2s(c[0]+(B[0]-c[0])*k,c[1]+(B[1]-c[1])*k),b=w2s(c[0]+(B[2]-c[0])*k,c[1]+(B[3]-c[1])*k);
+ ctx.save();ctx.setLineDash([8,5]);ctx.lineWidth=1.8;ctx.strokeStyle='#dc2626';ctx.fillStyle='rgba(220,38,38,.07)';ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.restore()}
+
+/* ---------- menu Sposta: pulsanti quadrati, una icona e una parola ---------- */
+const ICM={
+ move:'<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
+ by:'<path d="M4 12h12M12 8l4 4-4 4"/><path d="M20 5v14" stroke-dasharray="2 2.5"/>',
+ scale:'<rect x="3" y="12" width="9" height="9" rx="1"/><path d="M12 12l8-8M14 4h6v6"/>',
+ copy:'<rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M15 9V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h4"/>',
+ cw:'<path d="M20 12a8 8 0 1 1-2.7-6"/><path d="M20 4v5h-5"/>',
+ ccw:'<path d="M4 12a8 8 0 1 0 2.7-6"/><path d="M4 4v5h5"/>',
+ r180:'<path d="M5 9a8 8 0 0 1 14 0M19 4v5h-5"/><path d="M19 15a8 8 0 0 1-14 0M5 20v-5h5"/>',
+ ang:'<path d="M4 19h16M4 19L15 6"/><path d="M11 19a7 7 0 0 0-2-5"/>',
+ mh:'<path d="M12 3v18" stroke-dasharray="2.5 2.5"/><path d="M9 7L3.5 18H9z"/><path d="M15 7l5.5 11H15z"/>',
+ mv:'<path d="M3 12h18" stroke-dasharray="2.5 2.5"/><path d="M7 9L18 3.5V9z"/><path d="M7 15l11 5.5V15z"/>',
+ al:'<path d="M4 3v18"/><rect x="7" y="6" width="13" height="4" rx="1"/><rect x="7" y="14" width="8" height="4" rx="1"/>',
+ ac:'<path d="M12 3v18"/><rect x="5" y="6" width="14" height="4" rx="1"/><rect x="8" y="14" width="8" height="4" rx="1"/>',
+ ar:'<path d="M20 3v18"/><rect x="4" y="6" width="13" height="4" rx="1"/><rect x="9" y="14" width="8" height="4" rx="1"/>',
+ at:'<path d="M3 4h18"/><rect x="6" y="7" width="4" height="13" rx="1"/><rect x="14" y="7" width="4" height="8" rx="1"/>',
+ am:'<path d="M3 12h18"/><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="8" width="4" height="8" rx="1"/>',
+ ab:'<path d="M3 20h18"/><rect x="6" y="4" width="4" height="13" rx="1"/><rect x="14" y="9" width="4" height="8" rx="1"/>',
+ dh:'<path d="M4 4v16M20 4v16"/><rect x="10" y="8" width="4" height="8" rx="1"/>',
+ dv:'<path d="M4 4h16M4 20h16"/><rect x="8" y="10" width="8" height="4" rx="1"/>'};
 function openMovePop(btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k==='move'){closePop();return}
- pop.dataset.k='move';pop.innerHTML='';pop.style.flexDirection='column';pop.style.width='318px';
- const sec=t=>{const d=document.createElement('div');d.className='mvh';d.textContent=t;pop.appendChild(d)};
- const row=list=>{const d=document.createElement('div');d.className='mvrow';list.forEach(([lab,fn,tt])=>{const b=document.createElement('button');b.textContent=lab;if(tt)b.title=tt;b.onclick=fn;d.appendChild(b)});pop.appendChild(d)};
- sec('Sposta');row([['✥ Trascina',()=>{closePop();setTool('move')},'Trascina gli elementi selezionati'],['↦ Di una misura…',()=>{closePop();moveBy()},'Scrivi di quanto spostare']]);
- sec('Ruota');row([['↻ 90°',()=>rotGrp(90)],['↺ 90°',()=>rotGrp(-90)],['180°',()=>rotGrp(180)],['Angolo…',()=>{closePop();rotAsk()}]]);
- sec('Specchia');row([['↔ Orizzontale',()=>mirGrp('h'),'Capovolge destra/sinistra'],['↕ Verticale',()=>mirGrp('v'),'Capovolge alto/basso']]);
- sec('Allinea (almeno 2 elementi)');row([['⇤ Sinistra',()=>alignGrp('l')],['↔ Centro',()=>alignGrp('cx')],['⇥ Destra',()=>alignGrp('r')]]);row([['⇧ Alto',()=>alignGrp('t')],['↕ Centro',()=>alignGrp('cy')],['⇩ Basso',()=>alignGrp('b')]]);
- sec('Distribuisci (almeno 3 elementi)');row([['↔ Orizzontale',()=>distGrp('h'),'Spazi uguali in orizzontale'],['↕ Verticale',()=>distGrp('v'),'Spazi uguali in verticale']]);
- sec('Altro');row([['⧉ Duplica',()=>{if(!needSel())return;dup()}]]);
- const r=btn.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,innerWidth-336))+'px';pop.style.top=(r.bottom+6)+'px';pop.style.maxHeight=Math.max(200,innerHeight-r.bottom-20)+'px';pop.style.overflowY='auto';pop.style.display='flex'}
+ pop.dataset.k='move';pop.innerHTML='';pop.style.flexDirection='column';pop.style.width='';
+ const sec=(t,items)=>{const h=document.createElement('div');h.className='mvh';h.textContent=t;pop.appendChild(h);const g=document.createElement('div');g.className='mvgrid';
+  items.forEach(([ic,lab,fn,tt])=>{const b=document.createElement('button');b.className='sq';b.title=tt||lab;b.innerHTML=`<svg viewBox="0 0 24 24">${ICM[ic]}</svg><span>${lab}</span>`;b.onclick=fn;g.appendChild(b)});pop.appendChild(g)};
+ sec('Sposta e scala',[['move','Trascina',()=>{closePop();setTool('move')},'Trascina gli elementi selezionati'],['by','Di misura',()=>{closePop();moveBy()},'Scrivi di quanto spostare'],['scale','Scala',()=>{closePop();scaleOpen()},'Ingrandisci o riduci con una percentuale'],['copy','Duplica',()=>{if(!needSel())return;dup()}]]);
+ sec('Ruota',[['cw','Orario',()=>rotGrp(90),'90° in senso orario'],['ccw','Antiorario',()=>rotGrp(-90),'90° in senso antiorario'],['r180','180°',()=>rotGrp(180)],['ang','Angolo',()=>{closePop();rotAsk()},'Scrivi l’angolo']]);
+ sec('Specchia e distribuisci',[['mh','Specchia',()=>mirGrp('h'),'Capovolge destra/sinistra'],['mv','Specchia',()=>mirGrp('v'),'Capovolge alto/basso'],['dh','Spazi',()=>distGrp('h'),'Spazi uguali in orizzontale (almeno 3)'],['dv','Spazi',()=>distGrp('v'),'Spazi uguali in verticale (almeno 3)']]);
+ sec('Allinea (almeno 2)',[['al','Sinistra',()=>alignGrp('l')],['ac','Centro',()=>alignGrp('cx'),'Centro in orizzontale'],['ar','Destra',()=>alignGrp('r')],['at','Alto',()=>alignGrp('t')],['am','Centro',()=>alignGrp('cy'),'Centro in verticale'],['ab','Basso',()=>alignGrp('b')]]);
+ const r=btn.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,innerWidth-300))+'px';pop.style.top=(r.bottom+6)+'px';pop.style.maxHeight=Math.max(200,innerHeight-r.bottom-20)+'px';pop.style.overflowY='auto';pop.style.display='flex'}
 
 /* ---------- lente d'ingrandimento mentre si disegna con dito o penna (il dito non copre il punto) ---------- */
 function drawLoupe(){if(!aim||!DRAWT.includes(tool))return;const d=devicePixelRatio||1,W=cv.width/d,H=cv.height/d,r=56,Z=2.2,fs=w2s(mouse.x,mouse.y);
@@ -1426,7 +1488,7 @@ function edgeStep(){edgeRun=false;if(!aim)return;const r=cv.getBoundingClientRec
  if(sy<E)vy=V*(E-sy)/E;else if(sy>r.height-E)vy=-V*(sy-(r.height-E))/E;
  if(vx||vy){view.x+=vx;view.y+=vy;remouse();draw();edgeRun=true;requestAnimationFrame(edgeStep)}}
 
-$('#bSet').onclick=openSettings;kpBuild();gridUI();
+$('#bSet').onclick=openSettings;kpBuild();spBuild();gridUI();
 $('#flrClose').onclick=()=>{$('#app').classList.add('noL');spState();resize()};
 /* ---------- avvio ---------- */
 $('#bImport').onclick=openImport;$('#bFit').onclick=fitAll;$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;
