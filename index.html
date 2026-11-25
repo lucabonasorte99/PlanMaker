@@ -849,6 +849,7 @@ if(tool==='place'&&ghostBlock){const raw=s2w(mouse.sx,mouse.sy),gb=ghostBlock,it
 if(tool==='text'){const p=[wx,wy];askText('Testo','',v=>{if(v){S.items.push({id:S.nid++,t:'text',x:p[0],y:p[1],txt:v,fs:20});commit();draw()}});return}
 if(tool==='calib'){if(!S.under){toast('Importa prima uno sfondo');return}if(!calib)calib={a:null,b:null};if(!calib.a){calib.a=[wx,wy]}else if(!calib.b&&dist(calib.a,[wx,wy])>1){calib.b=[wx,wy];const measured=dist(calib.a,calib.b);askNumber('Distanza reale tra i due punti ('+UN().n+')',uE(measured),v=>{v=uFromE(v);if(v>0){const k=v/measured,u=S.under,A=calib.a;u.s*=k;u.x=A[0]-(A[0]-u.x)*k;u.y=A[1]-(A[1]-u.y)*k;commit();toast('Scala calibrata ✔');fitAll()}calib=null;setTool('select')},()=>{calib=null;draw()})}draw();return}
 /* mouse: il punto si mette al clic. Dito/penna: premi e punta (vedi l'aggancio), il punto si conferma al rilascio */
+if(tool==='floor'&&FLR.mode==='auto'){autoFloor(wx,wy);return}
 if(DRAWT.includes(tool)){if(e.pointerType!=='mouse'){const first=!draft||!draft.pts.length;if(first)addPoint(wx,wy,e.pointerType);aim={id:e.pointerId,first,sx:mouse.sx,sy:mouse.sy};draw();return}addPoint(wx,wy,'mouse')}});
 const DRAWT=['wall','part','line','room','dim','floor'],AREAT=['room','floor'];
 function addPoint(wx,wy,pt){if(!draft)draft={t:tool,pts:[]};const L=draft.pts[draft.pts.length-1];if(L&&dist(L,[wx,wy])<.5)return;if((draft.t==='wall'||draft.t==='part'||draft.t==='line')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){draft.pts.push(draft.pts[0].slice());finishDraft();toast('Forma chiusa');return}if((draft.t==='room'||draft.t==='floor')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){finishDraft();return}draft.pts.push([wx,wy]);if(draft.t==='dim'&&draft.pts.length===2)finishDraft();draw();if(draft&&pt==='mouse')setTimeout(()=>{const i=$('#lbLen');if(i){i.focus();i.select()}},0)}
@@ -1439,7 +1440,7 @@ const FPRE=[
 ].map(([id,n,cat,pat,w,h,fuga,col,jcol,off])=>({id,n,cat,pat,w,h,fuga,col,jcol,off:off||.5}));
 const FPMAP=Object.fromEntries(FPRE.map(p=>[p.id,p]));
 const fpFrom=id=>{const p=FPMAP[id]||FPRE[0];return{pre:p.id,pat:p.pat,w:p.w,h:p.h,fuga:p.fuga,rot:0,off:p.off,col:p.col,jcol:p.jcol}};
-const FLR={cfg:fpFrom('gres60'),built:false};
+const FLR={cfg:fpFrom('gres60'),built:false,mode:'man'};
 const FPAL0=[['#ffffff','Bianco'],['#f1f1ee','Marmo'],['#e5e7eb','Grigio perla'],['#d9d6cf','Greige'],['#cfd2d6','Grigio'],['#a8adb3','Cemento'],['#4b5563','Antracite'],['#c98a63','Cotto'],['#c8a06a','Rovere'],['#dcc08f','Rovere chiaro'],['#b58863','Noce chiaro'],['#8b5e3c','Wengé'],['#fde68a','Sabbia'],['#cdd8e3','Azzurro'],['#b7d3ea','Celeste'],['#a7d48f','Prato']];
 /* come negli arredi: stessa tavolozza, con in più "vuoto" per l'interno e "nessuna linea" per le linee */
 const FPAL=[['','Vuoto (nessun colore)']].concat(FPAL0.concat(PALETTE.slice(1)).filter((c,i,a)=>a.findIndex(x=>x[0]===c[0])===i));
@@ -1509,12 +1510,48 @@ function floorUI(box,fp,item){const u=UN().n;
   box.insertAdjacentHTML('beforeend',`<div class="hint">Superficie ${A.toFixed(2)} m² · Perimetro ${fmtScr(perim(item.pts))}${n?`<br>Circa ${Math.ceil(n)} pezzi (${Math.ceil(n*1.1)} con il 10% di scarto)`:''}</div>`);
   const b=el('div','btns');const d=el('button',null,'Duplica');d.onclick=dup;const x=el('button',null,'Elimina');x.onclick=delSel;b.append(d,x);box.appendChild(b)}}
 
+/* pavimento automatico: tocca dentro uno spazio chiuso dai muri e il pavimento riempie l'interno */
+function autoRegion(px,py){
+ const W=S.items.filter(i=>i.t==='wall'&&vis(i)&&i.pts&&i.pts.length>1);if(!W.length)return{err:'Non ci sono muri: disegna prima i muri'};
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,mt=0;W.forEach(w=>{mt=Math.max(mt,w.th);w.pts.forEach(p=>{x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])})});
+ const m=mt+20;x0-=m;y0-=m;x1+=m;y1+=m;if(px<x0||px>x1||py<y0||py>y1)return{err:'Tocca dentro uno spazio chiuso dai muri'};
+ const c=Math.max(2,Math.max(x1-x0,y1-y0)/1600),nx=Math.ceil((x1-x0)/c)+1,ny=Math.ceil((y1-y0)/c)+1;
+ const cn=document.createElement('canvas');cn.width=nx;cn.height=ny;const g=cn.getContext('2d');g.strokeStyle='#000';g.lineJoin='miter';g.miterLimit=10;g.lineCap='square';
+ W.forEach(w=>{g.lineWidth=w.th/c;g.beginPath();w.pts.forEach((p,k)=>{const X=(p[0]-x0)/c,Y=(p[1]-y0)/c;k?g.lineTo(X,Y):g.moveTo(X,Y)});if(w.pts.length>2&&dist(w.pts[0],w.pts[w.pts.length-1])<.5)g.closePath();g.stroke()});
+ const d=g.getImageData(0,0,nx,ny).data,solid=i=>d[i*4+3]>40,sx=Math.floor((px-x0)/c),sy=Math.floor((py-y0)/c);
+ if(solid(sy*nx+sx))return{err:'Hai toccato un muro: tocca dentro la stanza'};
+ const fill=new Uint8Array(nx*ny),st=[sy*nx+sx];fill[st[0]]=1;let leak=false;
+ while(st.length){const i=st.pop(),x=i%nx,y=(i-x)/nx;if(x===0||y===0||x===nx-1||y===ny-1){leak=true;break}
+  for(const j of [i-1,i+1,i-nx,i+nx]){if(!fill[j]&&!solid(j)){fill[j]=1;st.push(j)}}}
+ if(leak)return{err:'Lo spazio non è chiuso: controlla che i muri si chiudano'};
+ const V=nx+1,from=[],to=[],byFrom=new Map();const E=(a,b)=>{const k=from.length;from.push(a);to.push(b);(byFrom.get(a)||byFrom.set(a,[]).get(a)).push(k)};
+ const F=(x,y)=>x>=0&&y>=0&&x<nx&&y<ny&&fill[y*nx+x];
+ for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){if(!fill[y*nx+x])continue;
+  if(!F(x,y-1))E(y*V+x,y*V+x+1);if(!F(x+1,y))E(y*V+x+1,(y+1)*V+x+1);if(!F(x,y+1))E((y+1)*V+x+1,(y+1)*V+x);if(!F(x-1,y))E((y+1)*V+x,y*V+x)}
+ const used=new Uint8Array(from.length);let best=null,bestA=0;
+ for(let e0=0;e0<from.length;e0++){if(used[e0])continue;const loop=[];let e=e0;while(e!=null&&!used[e]){used[e]=1;loop.push(from[e]);const nx2=(byFrom.get(to[e])||[]).find(k=>!used[k]);e=nx2}
+  const P=loop.map(v=>[(v%V)*c+x0,Math.floor(v/V)*c+y0]);const A=Math.abs(P.reduce((s,p,i)=>{const q=P[(i+1)%P.length];return s+p[0]*q[1]-q[0]*p[1]},0))/2;if(A>bestA){bestA=A;best=P}}
+ if(!best||best.length<4)return{err:'Impossibile ricavare il contorno'};
+ const dseg=(p,a,b)=>{const L=dist(a,b);if(L<1e-9)return dist(p,a);return Math.abs((b[0]-a[0])*(a[1]-p[1])-(a[0]-p[0])*(b[1]-a[1]))/L};
+ const dp=(P,tol)=>{if(P.length<3)return P;let mi=0,md=0;for(let i=1;i<P.length-1;i++){const dd=dseg(P[i],P[0],P[P.length-1]);if(dd>md){md=dd;mi=i}}if(md<=tol)return[P[0],P[P.length-1]];return dp(P.slice(0,mi+1),tol).slice(0,-1).concat(dp(P.slice(mi),tol))};
+ let far=0,fd=0;best.forEach((p,i)=>{const dd=dist(p,best[0]);if(dd>fd){fd=dd;far=i}});
+ const ring=best.slice(far).concat(best.slice(0,far)),h=best.length-far;
+ let pts=dp(ring.slice(0,h+1),c*1.6).slice(0,-1).concat(dp(ring.slice(h).concat([ring[0]]),c*1.6).slice(0,-1));
+ const fg=faceGeom().pts;pts=pts.map(p=>{let b=null,bd=10+c;fg.forEach(q=>{const dd=dist(p,q);if(dd<bd){bd=dd;b=q}});return b?[b[0],b[1]]:[Math.round(p[0]*2)/2,Math.round(p[1]*2)/2]});
+ let ch=true;while(ch&&pts.length>3){ch=false;for(let i=0;i<pts.length;i++){const a=pts[(i+pts.length-1)%pts.length],p=pts[i],b=pts[(i+1)%pts.length];if(dist(a,p)<1||dseg(p,a,b)<1.5){pts.splice(i,1);ch=true;break}}}
+ if(pts.length<3)return{err:'Impossibile ricavare il contorno'};return{pts}}
+function autoFloor(wx,wy){const r=autoRegion(wx,wy);if(r.err){toast(r.err);return}
+ S.items.push({id:S.nid++,t:'floor',pts:r.pts,fp:JSON.parse(JSON.stringify(FLR.cfg))});commit();draw();toast('Pavimento posato · '+area(r.pts).toFixed(2)+' m²')}
+
 /* tendina laterale dei pavimenti */
 function startFloor(id){FLR.cfg=fpFrom(id);sel=null;msel=[];panel();setTool('floor');buildFloors()}
 function buildFloors(){const app=$('#app');if(app.classList.contains('noL')||!app.classList.contains('showF'))return;const root=$('#flr');if(!root)return;
- if(!FLR.built){FLR.built=true;root.innerHTML='<div class="hint">Scegli un pavimento, poi clicca gli spigoli dell’area come con lo strumento Stanza: si agganciano alle facce interne dei muri. Invio o ✓ Fine per chiudere.</div><div id="flrCards"></div><div id="flrCustom"></div>';
+ if(!FLR.built){FLR.built=true;root.innerHTML='<div id="flrMode" class="srow"></div><div class="hint" id="flrHint"></div><div id="flrCards"></div><div id="flrCustom"></div>';
   const cards=$('#flrCards');let cat='';let grid=null;FPRE.forEach(p=>{if(p.cat!==cat){cat=p.cat;const h=document.createElement('div');h.className='cat';h.textContent=cat;cards.appendChild(h);grid=document.createElement('div');grid.className='fgrid';cards.appendChild(grid)}
    const e=document.createElement('div');e.className='blk';e.dataset.id=p.id;const c=document.createElement('canvas');try{floorThumb(c,p)}catch(er){}e.appendChild(c);e.appendChild(document.createTextNode(p.n));e.onclick=()=>startFloor(p.id);grid.appendChild(e)})}
+ {const md=$('#flrMode');md.innerHTML='<label>Come posarlo</label><span class="seg"><button data-m="man" class="'+(FLR.mode==='auto'?'':'on')+'">Manuale</button><button data-m="auto" class="'+(FLR.mode==='auto'?'on':'')+'">Automatico</button></span>';
+  md.querySelectorAll('button').forEach(b=>b.onclick=()=>{FLR.mode=b.dataset.m;draft=null;buildFloors();draw()});
+  $('#flrHint').textContent=FLR.mode==='auto'?'Automatico: scegli un pavimento, poi tocca dentro una stanza chiusa dai muri: il pavimento riempie l’interno fino alle facce dei muri.':'Manuale: scegli un pavimento, poi tocca gli spigoli dell’area come con lo strumento Stanza (si agganciano alle facce interne dei muri). Invio o ✓ Fine per chiudere.'}
  document.querySelectorAll('#flrCards .blk').forEach(b=>b.classList.toggle('on',tool==='floor'&&b.dataset.id===FLR.cfg.pre));
  const it=getItem(sel),target=it&&it.t==='floor'?it:null,box=$('#flrCustom');box.innerHTML='';
  const h=document.createElement('div');h.className='cat';h.textContent=target?'Pavimento selezionato':'Misure del nuovo pavimento';box.appendChild(h);floorUI(box,target?target.fp:FLR.cfg,target)}
