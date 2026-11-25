@@ -45,6 +45,7 @@ h4:first-child{margin-top:0}
 #pop .selopt{display:flex;align-items:center;gap:10px;width:240px;text-align:left;padding:9px 10px;font-size:13px}#pop .selopt svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}#pop .selopt span{display:flex;flex-direction:column;gap:3px}#pop .selopt small{font-size:11px;opacity:.75}
 .tbtn.dis{opacity:.4}
 #flrPane{display:none}#app.showF #libPane{display:none}#app.showF #flrPane{display:block}
+#pop .mvh{font-size:11px;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 2px}#pop .mvrow{display:flex;flex-wrap:wrap;gap:6px}#pop .mvrow button{min-height:42px;padding:0 11px;font-size:13px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.fgrid .blk{padding:3px;width:auto;font-size:11px}
 #flr .row label{flex:0 0 96px;font-size:12px}#flr .row input,#flr .row select,#props .row select{flex:1;min-width:0}
 #flr h4{margin:10px 0 4px;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
@@ -217,7 +218,7 @@ let view={x:200,y:120,z:.4};
 let tool='select',sel=null,msel=[],selMode='single',aim=null,penT=0,draft=null,ghostBlock=null,mouse={x:0,y:0,sx:0,sy:0,snap:null};
 let snapOn=true,orthoOn=false,quoteOn=true,spaceDown=false,shiftDown=false,drag=null,calib=null;
 /* ---------- impostazioni (salvate sul dispositivo) e unità di misura ---------- */
-const SET0={unit:'mix',kp:'auto',sens:1,palm:true};let SET=Object.assign({},SET0);
+const SET0={unit:'mix',kp:'auto',sens:1,palm:true,partSnap:'face'};let SET=Object.assign({},SET0);
 try{Object.assign(SET,JSON.parse(localStorage.getItem('planimetria-settings')||'{}'))}catch(e){}
 function saveSet(){try{localStorage.setItem('planimetria-settings',JSON.stringify(SET))}catch(e){}}
 let touchUI=false;try{touchUI=matchMedia('(pointer:coarse)').matches}catch(e){}
@@ -407,6 +408,7 @@ layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 16.
 select:'<path d="M6 3l12 9-5.5 1L10 19z"/>',
 del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
 floors:'<rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9.5h18M3 15h18M9 3v6.5M15 9.5V15M9 15v6M15 15v6"/>',
+move:'<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
 hand:'<path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/>',
 wall:'<rect x="2" y="9" width="20" height="6" fill="currentColor"/>',
 part:'<rect x="2" y="10.5" width="20" height="3"/><path d="M5 10.5l3 3M10 10.5l3 3M15 10.5l3 3"/>',
@@ -418,20 +420,20 @@ dim:'<path d="M3 13h18M3 9v8M21 9v8M6 10l-3 3 3 3M18 10l3 3-3 3"/>',
 text:'<path d="M5 6V4h14v2M12 4v16M9 20h6"/>',
 calib:'<rect x="2" y="8" width="20" height="8" rx="1.5"/><path d="M6 8v3M10 8v4M14 8v3M18 8v4"/>',
 under:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="9" r="1.4"/>'};
-const TOOLS=[['Costruzione',[['select','Seleziona','V',1],['del','Cancella','Canc',0,1],['wall','Muro','W'],['part','Tramezzo','E'],['door','Porte','D',1],['win','Finestre','N',1],['room','Stanza','S'],['dim','Quota','Q'],['text','Testo','T']]],
+const TOOLS=[['Costruzione',[['select','Seleziona','V',1],['move','Sposta','G',1],['del','Cancella','Canc',0,1],['wall','Muro','W'],['part','Tramezzo','E'],['door','Porte','D',1],['win','Finestre','N',1],['room','Stanza','S'],['dim','Quota','Q'],['text','Testo','T']]],
 ['Altro',[['hand','Sposta vista','H'],['line','Linea','L'],['calib','Calibra scala','C'],['under','Sposta sfondo','B']]],
 ['Pannelli',[['lib','Arredi','A',0,1],['floors','Pavimenti','P',0,1],['layers','Layer','Y',0,1]]]];
-const HELP={floor:'Pavimento: scegli il tipo a sinistra, poi clic sugli spigoli dell’area (si agganciano alle facce interne dei muri). Invio o ✓ Fine per chiudere.',select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, Invio per finire. F8 = Orto (a squadra). Tablet: premi, punta e rilascia per confermare.',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Stanza: clic sugli spigoli INTERNI dei muri (si agganciano alle facce interne), Invio per chiudere: mostra nome, superficie e perimetro.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
+const HELP={move:'Sposta: trascina gli elementi selezionati (o toccane uno). Il menu ▾ ruota, specchia, allinea e distribuisce.',floor:'Pavimento: scegli il tipo a sinistra, poi clic sugli spigoli dell’area (si agganciano alle facce interne dei muri). Invio o ✓ Fine per chiudere.',select_multi:'Seleziona multiplo: tocca gli elementi uno dopo l’altro per aggiungerli o toglierli; trascina uno di essi per spostarli tutti insieme. Tocca il vuoto per annullare.',select_box:'Seleziona con riquadro: trascina sul vuoto per disegnare un riquadro che seleziona ciò che contiene (Maiusc = aggiungi). Per muovere la vista usa due dita o “Sposta vista”.',select:'Tocca/clicca per selezionare e trascina per spostare; trascina sul vuoto per muovere la vista. R ruota, Canc elimina, Ctrl+D duplica.',hand:'Trascina per muovere la vista. Rotella o due dita per lo zoom.',wall:'Muro: clic per ogni vertice, Invio per finire. F8 = Orto (a squadra). Tablet: il tocco inizia il muro, trascina e rilascia per confermare (la lente mostra il punto).',part:'Tramezzo: come il muro ma più sottile (spessore nelle impostazioni).',line:'Clic per ogni vertice, doppio clic o Invio per finire.',room:'Stanza: clic sugli spigoli INTERNI dei muri (si agganciano alle facce interne), Invio per chiudere: mostra nome, superficie e perimetro.',dim:'Due clic: misura una distanza.',text:'Clic dove scrivere.',calib:'Clic su due punti dello sfondo di cui conosci la distanza reale.',under:'Trascina per spostare lo sfondo importato.',place:'Clic per posare un blocco, poi trascinalo per spostarlo; per metterne un altro clicca di nuovo la sua icona. R ruota 90°, F inverte il lato, M specchia. Porte e finestre si agganciano ai muri. Esc per uscire.'};
 let lastOpen={door:'door',win:'win'};
 function buildTools(){const t=$('#tb');t.innerHTML='';TOOLS.forEach(([g,list],gi)=>{if(gi){const v=document.createElement('span');v.className='vsep';t.appendChild(v)}const grp=document.createElement('div');grp.className='tgrp';
-list.forEach(([id,n,k,dd,sp])=>{const b=document.createElement('button');b.className='tbtn';b.dataset.t=id;if(sp)b.dataset.sp=1;b.title=n+' ('+k+')';b.innerHTML=`<svg viewBox="0 0 24 24">${ICO[id]}</svg><span>${n}${dd?' <span class="car">▾</span>':''}</span>`;b.onclick=e=>{e.stopPropagation();if(id==='lib'){closePop();toggleLib()}else if(id==='layers'){closePop();openLayers(b)}else if(id==='floors'){closePop();toggleFloors()}else if(id==='del'){closePop();delSel()}else if(id==='select'){setTool('select');openSelPop(b)}else if(dd)openPop(id,b);else{closePop();setTool(id)}};grp.appendChild(b)});t.appendChild(grp)})}
+list.forEach(([id,n,k,dd,sp])=>{const b=document.createElement('button');b.className='tbtn';b.dataset.t=id;if(sp)b.dataset.sp=1;b.title=n+' ('+k+')';b.innerHTML=`<svg viewBox="0 0 24 24">${ICO[id]}</svg><span>${n}${dd?' <span class="car">▾</span>':''}</span>`;b.onclick=e=>{e.stopPropagation();if(id==='lib'){closePop();toggleLib()}else if(id==='layers'){closePop();openLayers(b)}else if(id==='move'){setTool('move');openMovePop(b)}else if(id==='floors'){closePop();toggleFloors()}else if(id==='del'){closePop();delSel()}else if(id==='select'){setTool('select');openSelPop(b)}else if(dd)openPop(id,b);else{closePop();setTool(id)}};grp.appendChild(b)});t.appendChild(grp)})}
 /* selezione: singola, multipla o con riquadro */
 function selIds(){return msel.length>1?msel.slice():(sel?[sel]:[])}
 function setSelIds(ids){ids=ids.filter(id=>getItem(id));if(ids.length<=1){sel=ids.length?ids[0]:null;msel=[]}else{sel=null;msel=ids}}
 function selModeUI(){const s=document.querySelector('.tbtn[data-t=select] span');if(s)s.innerHTML=(selMode==='multi'?'Multiplo':selMode==='box'?'Riquadro':'Seleziona')+' <span class="car">▾</span>'}
 function setSelMode(m){selMode=m;selModeUI();closePop();setTool('select');panel();draw()}
 function updDel(){const b=document.querySelector('.tbtn[data-t=del]');if(b)b.classList.toggle('dis',!selIds().length)}
-function openSelPop(btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k==='select'){closePop();return}pop.dataset.k='select';pop.innerHTML='';pop.style.flexDirection='column';
+function openSelPop(btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k==='select'){closePop();return}pop.dataset.k='select';pop.innerHTML='';pop.style.flexDirection='column';pop.style.width='';pop.style.maxHeight='';pop.style.overflowY='';
 [['single','Seleziona','Tocca un elemento e trascinalo','<path d="M6 3l12 9-5.5 1L10 19z"/>'],['multi','Seleziona multiplo','Tocca più elementi, uno dopo l’altro','<path d="M5 3l11 8-5 1-2.5 6z"/><path d="M15 16h6M18 13v6"/>'],['box','Seleziona con riquadro','Trascina un riquadro sul vuoto','<rect x="3" y="3" width="13" height="13" stroke-dasharray="3 2"/><path d="M11 11l9 3.5-3.5 1.5-1.5 3.5z"/>']].forEach(([m,n,d,ic])=>{const e=document.createElement('div');e.className='blk selopt'+(selMode===m?' on':'');e.innerHTML=`<svg viewBox="0 0 24 24">${ic}</svg><span><b>${n}</b><small>${d}</small></span>`;e.onclick=()=>setSelMode(m);pop.appendChild(e)});
 const r=btn.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,innerWidth-260))+'px';pop.style.top=(r.bottom+6)+'px';pop.style.display='flex'}
 function finishBox(d){const x0=Math.min(d.a[0],d.b[0]),x1=Math.max(d.a[0],d.b[0]),y0=Math.min(d.a[1],d.b[1]),y1=Math.max(d.a[1],d.b[1]);
@@ -440,14 +442,14 @@ const inb=p=>p[0]>=x0&&p[0]<=x1&&p[1]>=y0&&p[1]<=y1;
 const ids=S.items.filter(i=>vis(i)&&editable(i)&&((i.t==='block'||i.t==='text')?inb([i.x,i.y]):i.t==='dim'?(inb(i.a)&&inb(i.b)):i.pts?i.pts.every(inb):false)).map(i=>i.id);
 setSelIds(d.add?[...new Set([...selIds(),...ids])]:ids);if(!ids.length)toast('Nessun elemento nel riquadro')}
 function closePop(){$('#pop').style.display='none'}
-function openPop(kind,btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k===kind){closePop();return}pop.dataset.k=kind;pop.innerHTML='';pop.style.flexDirection='';const cat=kind==='door'?'Porte':'Finestre';
+function openPop(kind,btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k===kind){closePop();return}pop.dataset.k=kind;pop.innerHTML='';pop.style.flexDirection='';pop.style.width='';pop.style.maxHeight='';pop.style.overflowY='';const cat=kind==='door'?'Porte':'Finestre';
 LIB.filter(d=>d.cat===cat).forEach(def=>{const e=document.createElement('div');e.className='blk';const c=document.createElement('canvas');thumb(c,def,null,88,60);e.appendChild(c);e.appendChild(document.createTextNode(def.n));e.onclick=()=>{lastOpen[kind]=def.id;closePop();startPlace({id:def.id})};pop.appendChild(e)});
 const r=btn.getBoundingClientRect();pop.style.left=Math.min(r.left,innerWidth-pop.children.length*104-20)+'px';pop.style.top=(r.bottom+6)+'px';pop.style.display='flex'}
 addEventListener('pointerdown',e=>{if(!e.target.closest('#pop')&&!e.target.closest('.tbtn'))closePop()});
 function startPlace(g){const def=LIBMAP[g.id];ghostBlock=Object.assign({rot:0,mir:false},g);setTool('place')}
 function setTool(t){tool=t;draft=null;calib=null;if(t!=='place')ghostBlock=null;ensureLayer(t);const gcat=t==='place'&&ghostBlock?LIBMAP[ghostBlock.id].cat:'';
 document.querySelectorAll('.tbtn:not([data-sp])').forEach(b=>b.classList.toggle('on',b.dataset.t===t||(gcat==='Porte'&&b.dataset.t==='door')||(gcat==='Finestre'&&b.dataset.t==='win')));
-document.querySelectorAll('#lib .blk').forEach(b=>b.classList.toggle('on',t==='place'&&ghostBlock&&b.dataset.key===ghostBlock.key));obar();$('#stHelp').textContent=(t==='select'&&HELP['select_'+selMode])||HELP[t]||'';cv.style.cursor=t==='hand'?'grab':t==='select'?'default':'crosshair';draw()}
+document.querySelectorAll('#lib .blk').forEach(b=>b.classList.toggle('on',t==='place'&&ghostBlock&&b.dataset.key===ghostBlock.key));obar();$('#stHelp').textContent=(t==='select'&&HELP['select_'+selMode])||HELP[t]||'';cv.style.cursor=t==='hand'?'grab':t==='select'?'default':t==='move'?'move':'crosshair';draw()}
 let MYLIB=[];try{MYLIB=JSON.parse(localStorage.getItem('planimetria-mylib')||'[]')}catch(e){}
 function saveMyLib(){try{localStorage.setItem('planimetria-mylib',JSON.stringify(MYLIB))}catch(e){}if(DB&&ready)col().doc('mylib').set({name:'__mylib',updatedAt:Date.now(),by:TAB,data:JSON.stringify(MYLIB)}).catch(()=>{});buildLib()}
 function buildLib(){const q=$('#search').value.toLowerCase();const box=$('#lib');box.innerHTML='';
@@ -463,30 +465,49 @@ function snapPoints(noWalls){const P=[];S.items.forEach(i=>{if(!vis(i)||(noWalls
 function snapSegs(){const L=[];S.items.forEach(i=>{if(!vis(i))return;if((i.t==='wall'||i.t==='line')&&i.pts)for(let k=0;k<i.pts.length-1;k++)L.push([i.pts[k],i.pts[k+1]]);else if(i.t==='room')for(let k=0;k<i.pts.length;k++)L.push([i.pts[k],i.pts[(k+1)%i.pts.length]])});return L}
 /* Orto (F8): muri a squadra. Maiusc tenuto premuto inverte lo stato (come in AutoCAD) */
 const orthoNow=()=>orthoOn!==shiftDown;
-function doSnap(wx,wy,last){const z=view.z/(SET.sens||1),tolP=12/z,tolT=9/z,tolM=8/z,tolE=6/z;let p=[wx,wy],info=null,ref=null;
+/* muri e tramezzi: aggancio al "corpo" dei muri esistenti (faccia o asse) con una zona comoda per il dito.
+   Con l'Orto il punto è l'incrocio dell'asse con la faccia (il tramezzo si ferma esattamente sul muro). */
+function bodySnap(wx,wy,last,ax,z){
+ const face=tool==='part'&&SET.partSnap!=='axis',TB=(aim?28:18)/z;let best=null;
+ S.items.forEach(w=>{if(w.t!=='wall'||!vis(w)||!w.pts||w.pts.length<2)return;const h=w.th/2;
+  for(let k=0;k<w.pts.length-1;k++){const a=w.pts[k],b=w.pts[k+1],L=dist(a,b);if(L<1e-6)continue;
+   const r=segDist([wx,wy],a,b),gap=r.d-h;if(gap>TB)continue;
+   const nx=-(b[1]-a[1])/L,ny=(b[0]-a[0])/L,ref=last||[wx,wy],s=((ref[0]-a[0])*nx+(ref[1]-a[1])*ny)>=0?1:-1,off=face?s*h:0;
+   const fa=[a[0]+nx*off,a[1]+ny*off],fb=[b[0]+nx*off,b[1]+ny*off];let p=null;
+   if(ax){const l1=ax==='h'?[-1e7,last[1]]:[last[0],-1e7],l2=ax==='h'?[1e7,last[1]]:[last[0],1e7],x=lineX(l1,l2,fa,fb);if(x&&x.u>-.03&&x.u<1.03)p=x.p}
+   else p=segDist([wx,wy],fa,fb).q;
+   if(!p)continue;if(!best||gap<best.gap)best={p,seg:[fa,fb],gap}}});
+ return best}
+function doSnap(wx,wy,last){const z=view.z/(SET.sens||1),tolP=12/z,tolT=9/z,tolM=8/z,tolE=6/z;let p=[wx,wy],info=null,ref=null,seg=null;
 const ortho=!!last&&orthoNow(),ax=ortho?(Math.abs(wx-last[0])>=Math.abs(wy-last[1])?'h':'v'):null;
 const A=q=>ax==='h'?q[0]:q[1],Cr=q=>ax==='h'?q[1]:q[0];const mk=a=>ax==='h'?[a,last[1]]:[last[0],a];
 /* chiusura della forma: zona ampia sul primo punto (comoda col dito); in Orto solo se è davvero allineato */
 if(draft&&draft.pts.length>=3&&draft.t!=='dim'){const f=draft.pts[0];if(Math.hypot(f[0]-wx,f[1]-wy)<22/z&&(!ortho||Math.abs(Cr(f)-Cr(last))<1.5))return{p:[f[0],f[1]],info:'chiusura'}}
 /* Stanza e Pavimento: ci si aggancia agli spigoli e alle facce interne dei muri, non alla mezzeria */
-const area=areaSnap(),pts=(area?faceGeom().pts.concat(snapPoints(true)):snapPoints()).concat(draft&&draft.pts.length>1?draft.pts.slice(0,-1):[]);
+const area=areaSnap(),WP=snapOn&&(tool==='wall'||tool==='part');
+const pts=(area?faceGeom().pts.concat(snapPoints(true)):snapPoints().concat(WP&&tool==='part'?faceGeom().pts:[])).concat(draft&&draft.pts.length>1?draft.pts.slice(0,-1):[]);
 if(ortho){
  p=mk(A([wx,wy]));
  if(snapOn){
-  /* allineamento: la misura lungo l'asse si aggancia a quella di un vertice vicino (con guida tratteggiata) */
-  let best=tolT;for(const q of pts){const d=Math.abs(A(q)-A([wx,wy]));if(d<best){best=d;p=mk(A(q));info=Math.abs(Cr(q)-Cr(last))<tolP?'punto':'allinea';ref=q}}
-  if(!info){let bd=tolM;for(const[a,b]of (area?faceGeom().segs:snapSegs())){const dc=Cr(b)-Cr(a);if(Math.abs(dc)<1e-6)continue;const t=(Cr(last)-Cr(a))/dc;if(t<0||t>1)continue;const aa=A(a)+t*(A(b)-A(a)),d=Math.abs(aa-A([wx,wy]));if(d<bd){bd=d;p=mk(aa);info='muro'}}}
+  /* 1) vertice sull'asse  2) corpo del muro (faccia/asse)  3) allineamento a un vertice con guida  4) incrocio con la mezzeria */
+  let best=tolT,bq=null;for(const q of pts){const d=Math.abs(A(q)-A([wx,wy]));if(d<best){best=d;bq=q}}
+  if(bq&&Math.abs(Cr(bq)-Cr(last))<tolP){p=mk(A(bq));info='punto';ref=bq}
+  else{const bs=WP?bodySnap(wx,wy,last,ax,z):null;
+   if(bs){p=bs.p;info='muro';seg=bs.seg}
+   else if(bq){p=mk(A(bq));info='allinea';ref=bq}
+   else{let bd=tolM;for(const[a,b]of (area?faceGeom().segs:snapSegs())){const dc=Cr(b)-Cr(a);if(Math.abs(dc)<1e-6)continue;const t=(Cr(last)-Cr(a))/dc;if(t<0||t>1)continue;const aa=A(a)+t*(A(b)-A(a)),d=Math.abs(aa-A([wx,wy]));if(d<bd){bd=d;p=mk(aa);info='muro'}}}}
  }
  if(!info){const g=S.gridOn?S.grid:1;p=mk(Math.round(A([wx,wy])/g)*g);info=S.gridOn?'griglia':null}
- return{p,info,ref}}
-/* libero: zone di aggancio piccole (punti 12 px, centri 8 px, bordo muro 6 px) per non tirare i muri fuori squadro */
+ return{p,info,ref,seg}}
+/* libero: punti 12 px; poi corpo del muro; poi centri 8 px e bordo 6 px */
 if(snapOn){
  let best=tolP;for(const q of pts){const d=Math.hypot(q[0]-wx,q[1]-wy);if(d<best){best=d;p=[q[0],q[1]];info='punto'}}
+ if(!info&&WP){const bs=bodySnap(wx,wy,null,null,z);if(bs){p=bs.p;info='muro';seg=bs.seg}}
  if(!info){const segs=area?faceGeom().segs:snapSegs();best=area?0:tolM;for(const[a,b]of segs){const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];const d=Math.hypot(m[0]-wx,m[1]-wy);if(d<best){best=d;p=m;info='medio'}}
   if(!info){best=tolE;for(const[a,b]of segs){const r=segDist([wx,wy],a,b);if(r.d<best){best=r.d;p=r.q;info='muro'}}}}
 }
 if(!info){const g=S.gridOn?S.grid:1,r=v=>Math.round(v/g)*g;p=[r(wx),r(wy)];info=S.gridOn?'griglia':null}
-return{p,info,ref}}
+return{p,info,ref,seg}}
 function wallSnapForBlock(wx,wy){let best=35,r=null;S.items.forEach(i=>{if(i.t!=='wall'||!vis(i))return;for(let k=0;k<i.pts.length-1;k++){const s=segDist([wx,wy],i.pts[k],i.pts[k+1]);if(s.d<best+i.th/2){best=s.d;r={q:s.q,th:i.th,ang:Math.atan2(i.pts[k+1][1]-i.pts[k][1],i.pts[k+1][0]-i.pts[k][0])*180/Math.PI}}}});return r}
 /* arredi appoggiati ai muri (anche inclinati) e negli angoli */
 function furnSnap(x,y,w,h,relRot,origRot){let best=null;
@@ -514,7 +535,7 @@ if(draft){drawDraft();drawCloseRing();drawDraftDots()}
 if(calib&&calib.a){const a=w2s(...calib.a),b=w2s(mouse.x,mouse.y);if(calib.b)Object.assign(b,w2s(...calib.b));ctx.strokeStyle='#dc2626';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(b[0],b[1]);ctx.stroke()}
 if(sel){const it=getItem(sel);if(it)drawHandles(it)}
 if(drag&&drag.k==='box'&&drag.moved){const a=w2s(drag.a[0],drag.a[1]),b=w2s(drag.b[0],drag.b[1]);ctx.save();ctx.fillStyle='rgba(2,132,199,.10)';ctx.strokeStyle='#0284c7';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);ctx.restore()}
-if(tool!=='select'&&tool!=='hand'&&tool!=='place'&&tool!=='under')drawSnapMark();
+if(tool!=='select'&&tool!=='move'&&tool!=='hand'&&tool!=='place'&&tool!=='under')drawSnapMark();drawLoupe();
 $('#stZoom').textContent='zoom '+Math.round(view.z*100)+'%';lenSync();dbarSync();kpSync();}
 function drawGrid(W,H){const z=view.z;const x0=-view.x/z,y0=-view.y/z,x1=(W-view.x)/z,y1=(H-view.y)/z;
 const lines=(st,col)=>{ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();for(let x=Math.floor(x0/st)*st;x<=x1;x+=st){const sx=Math.round(x*z+view.x)+.5;ctx.moveTo(sx,0);ctx.lineTo(sx,H)}for(let y=Math.floor(y0/st)*st;y<=y1;y+=st){const sy=Math.round(y*z+view.y)+.5;ctx.moveTo(0,sy);ctx.lineTo(W,sy)}ctx.stroke()};
@@ -524,6 +545,7 @@ function drawCloseRing(){if(!draft||draft.t==='dim'||draft.pts.length<3)return;c
 function drawDraftDots(){if(!draft||draft.t==='dim'&&draft.pts.length>1)return;ctx.save();ctx.fillStyle='#0284c7';ctx.strokeStyle='#fff';ctx.lineWidth=2;draft.pts.forEach(p=>{const s=w2s(p[0],p[1]);ctx.beginPath();ctx.arc(s[0],s[1],5,0,7);ctx.fill();ctx.stroke()});ctx.restore()}
 function dbarSync(){const el=$('#dbar');if(!el)return;const on=!!(draft&&draft.pts.length&&draft.t!=='dim');el.style.display=on?'flex':'none';if(on)$('#dClose').style.display=(draft.t!=='room'&&draft.t!=='floor'&&draft.pts.length>=3)?'':'none'}
 function drawSnapMark(){const s=w2s(mouse.x,mouse.y),k=mouse.snap;
+if(mouse.seg&&k==='muro'){const a=w2s(mouse.seg[0][0],mouse.seg[0][1]),b=w2s(mouse.seg[1][0],mouse.seg[1][1]);ctx.save();ctx.strokeStyle='rgba(2,132,199,.55)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.restore()}
 if(mouse.ref&&(k==='allinea'||k==='punto')){const r=w2s(mouse.ref[0],mouse.ref[1]);ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle='#0284c7';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(r[0],r[1]);ctx.lineTo(s[0],s[1]);ctx.stroke();ctx.restore()}
 ctx.strokeStyle='#0284c7';ctx.fillStyle='#fff';ctx.lineWidth=1.8;ctx.beginPath();
 if(k==='punto'){ctx.rect(s[0]-6,s[1]-6,12,12);ctx.fill();ctx.stroke()}else if(k==='medio'){ctx.moveTo(s[0],s[1]-7);ctx.lineTo(s[0]+7,s[1]+5);ctx.lineTo(s[0]-7,s[1]+5);ctx.closePath();ctx.fill();ctx.stroke()}
@@ -571,7 +593,7 @@ function pos(e){const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.cli
 function updMouse(e){shiftDown=e.shiftKey;const[sx,sy]=pos(e);updMouseXY(sx,sy,e.altKey)}
 function remouse(){updMouseXY(mouse.sx,mouse.sy,false)}
 function updMouseXY(sx,sy,alt){const w=s2w(sx,sy);let last=null;if(draft&&draft.pts.length)last=draft.pts[draft.pts.length-1];if(calib&&calib.a&&!calib.b)last=calib.a;
-if(tool==='select'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[1];mouse.snap=null}else{const r=doSnap(w[0],w[1],last);mouse.x=r.p[0];mouse.y=r.p[1];mouse.snap=r.info||'';mouse.ref=r.ref||null}
+if(tool==='select'||tool==='move'||tool==='hand'||tool==='text'&&false){mouse.x=w[0];mouse.y=w[1];mouse.snap=null;mouse.seg=null}else{const r=doSnap(w[0],w[1],last);mouse.x=r.p[0];mouse.y=r.p[1];mouse.snap=r.info||'';mouse.ref=r.ref||null;mouse.seg=r.seg||null}
 mouse.sx=sx;mouse.sy=sy;
 if(tool==='place'&&ghostBlock){const def=LIBMAP[ghostBlock.id];let g={x:mouse.x,y:mouse.y,rot:ghostBlock.rot,h:null};if(def.lock){const ws=wallSnapForBlock(w[0],w[1]);if(ws){g.x=ws.q[0];g.y=ws.q[1];g.rot=ws.ang+(ghostBlock.flip?180:0);g.h=ws.th+2}}else if(magOn&&!alt){const r=furnSnap(w[0],w[1],ghostBlock.w||def.w,ghostBlock.h||def.h,ghostBlock.rot,null);if(r){g.x=r.x;g.y=r.y;g.rot=r.rot}}mouse.ghost=g}
 $('#stPos').textContent=`x ${liveE(mouse.x)} · y ${liveE(mouse.y)} ${UN().n}`}
@@ -591,6 +613,9 @@ firstTouch=e.pointerType==='touch'?{t:Date.now(),n:S.items.length,dn:draft?draft
 updMouse(e);const wx=mouse.x,wy=mouse.y;
 if(e.button===1||spaceDown||tool==='hand'){drag={k:'pan',sx:mouse.sx,sy:mouse.sy,vx:view.x,vy:view.y};cv.style.cursor='grabbing';return}
 if(e.button===2){if(draft)finishDraft();return}
+if(tool==='move'){const raw=s2w(mouse.sx,mouse.sy),it=hit(raw[0],raw[1]);
+ if(it){let ids=selIds();if(!ids.includes(it.id)){ids=[it.id];setSelIds(ids)}drag={k:'mmove',ids,start:raw,px:mouse.sx,py:mouse.sy,origs:Object.fromEntries(ids.map(id=>[id,JSON.parse(JSON.stringify(getItem(id)))])),moved:false};panel();draw();return}
+ drag={k:'pan',sx:mouse.sx,sy:mouse.sy,vx:view.x,vy:view.y};return}
 if(tool==='select'){const raw=s2w(mouse.sx,mouse.sy);const h=hitHandle(raw[0],raw[1]);if(h){drag={...h,id:sel,moved:false};return}
 const it=hit(raw[0],raw[1]);
 const grp=ids=>{drag={k:'mmove',ids,start:raw,px:mouse.sx,py:mouse.sy,origs:Object.fromEntries(ids.map(id=>[id,JSON.parse(JSON.stringify(getItem(id)))])),moved:false}};
@@ -604,7 +629,7 @@ if(tool==='place'&&ghostBlock){const raw=s2w(mouse.sx,mouse.sy),gb=ghostBlock,it
 if(tool==='text'){const p=[wx,wy];askText('Testo','',v=>{if(v){S.items.push({id:S.nid++,t:'text',x:p[0],y:p[1],txt:v,fs:20});commit();draw()}});return}
 if(tool==='calib'){if(!S.under){toast('Importa prima uno sfondo');return}if(!calib)calib={a:null,b:null};if(!calib.a){calib.a=[wx,wy]}else if(!calib.b&&dist(calib.a,[wx,wy])>1){calib.b=[wx,wy];const measured=dist(calib.a,calib.b);askNumber('Distanza reale tra i due punti ('+UN().n+')',uE(measured),v=>{v=uFromE(v);if(v>0){const k=v/measured,u=S.under,A=calib.a;u.s*=k;u.x=A[0]-(A[0]-u.x)*k;u.y=A[1]-(A[1]-u.y)*k;commit();toast('Scala calibrata ✔');fitAll()}calib=null;setTool('select')},()=>{calib=null;draw()})}draw();return}
 /* mouse: il punto si mette al clic. Dito/penna: premi e punta (vedi l'aggancio), il punto si conferma al rilascio */
-if(DRAWT.includes(tool)){if(e.pointerType!=='mouse'){aim={id:e.pointerId};draw();return}addPoint(wx,wy,'mouse')}});
+if(DRAWT.includes(tool)){if(e.pointerType!=='mouse'){const first=!draft||!draft.pts.length;if(first)addPoint(wx,wy,e.pointerType);aim={id:e.pointerId,first,sx:mouse.sx,sy:mouse.sy};draw();return}addPoint(wx,wy,'mouse')}});
 const DRAWT=['wall','part','line','room','dim','floor'],AREAT=['room','floor'];
 function addPoint(wx,wy,pt){if(!draft)draft={t:tool,pts:[]};const L=draft.pts[draft.pts.length-1];if(L&&dist(L,[wx,wy])<.5)return;if((draft.t==='wall'||draft.t==='part'||draft.t==='line')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){draft.pts.push(draft.pts[0].slice());finishDraft();toast('Forma chiusa');return}if((draft.t==='room'||draft.t==='floor')&&draft.pts.length>=3&&dist(draft.pts[0],[wx,wy])<1){finishDraft();return}draft.pts.push([wx,wy]);if(draft.t==='dim'&&draft.pts.length===2)finishDraft();draw();if(draft&&pt==='mouse')setTimeout(()=>{const i=$('#lbLen');if(i){i.focus();i.select()}},0)}
 cv.addEventListener('pointermove',e=>{if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,pos(e));
@@ -625,7 +650,8 @@ else if(drag.k==='size'){const c=Math.cos(rad(it.rot)),s=Math.sin(rad(it.rot)),d
 draw();return}
 draw()});
 function endPtr(e){ptrs.delete(e.pointerId);if(pinch){if(ptrs.size===0)pinch=null;draw();return}if(drag){if(drag.k==='box')finishBox(drag);else if(drag.k==='mmove'&&!drag.moved&&drag.tg)setSelIds(selIds().filter(id=>id!==drag.tg));else if(drag.k==='pan'&&drag.clr&&!drag.pm)setSelIds([]);if(drag.k==='pan')cv.style.cursor=tool==='hand'?'grab':'default';else if(drag.k!=='box'&&(drag.moved||drag.k==='under'))commit();drag=null;panel()}if(pendingRemote&&!drag&&!draft){const p=pendingRemote;pendingRemote=null;applyRemote(p)}draw()}
-cv.addEventListener('pointerup',e=>{if(aim&&aim.id===e.pointerId){aim=null;if(DRAWT.includes(tool)&&!pinch){updMouse(e);addPoint(mouse.x,mouse.y,e.pointerType)}}});
+/* il tocco INIZIA il muro (primo punto al contatto); trascinando si vede il segmento, al rilascio il punto è confermato. Un semplice tocco lascia solo il punto di partenza */
+cv.addEventListener('pointerup',e=>{if(aim&&aim.id===e.pointerId){const a=aim;aim=null;if(DRAWT.includes(tool)&&!pinch){updMouse(e);const moved=Math.hypot(mouse.sx-a.sx,mouse.sy-a.sy)>(e.pointerType==='pen'?8:14);if(!a.first||moved)addPoint(mouse.x,mouse.y,e.pointerType)}}});
 cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',e=>{if(aim&&aim.id===e.pointerId)aim=null;endPtr(e)});cv.addEventListener('lostpointercapture',e=>{if(ptrs.has(e.pointerId))endPtr(e)});
 addEventListener('blur',()=>{ptrs.clear();pinch=null});document.addEventListener('visibilitychange',()=>{if(document.hidden){ptrs.clear();pinch=null}});
 cv.addEventListener('dblclick',()=>{if(draft)finishDraft()});
@@ -655,7 +681,7 @@ if(k==='a'&&!e.ctrlKey&&!e.metaKey){toggleLib();return}if(k==='p'&&!e.ctrlKey&&!
 if(k==='m'){if(tool==='place'&&ghostBlock){ghostBlock.mir=!ghostBlock.mir;obar();draw()}else mirSel();return}
 if(k==='d'&&!e.ctrlKey&&!e.metaKey){startPlace({id:lastOpen.door});return}if(k==='n'){startPlace({id:lastOpen.win});return}
 if(e.key==='['){rotSel(-15);return}if(e.key===']'){rotSel(15);return}
-const map={v:'select',h:'hand',w:'wall',e:'part',l:'line',s:'room',q:'dim',t:'text',c:'calib',b:'under'};if(map[k]&&!e.ctrlKey&&!e.metaKey)setTool(map[k])});
+const map={v:'select',g:'move',h:'hand',w:'wall',e:'part',l:'line',s:'room',q:'dim',t:'text',c:'calib',b:'under'};if(map[k]&&!e.ctrlKey&&!e.metaKey)setTool(map[k])});
 addEventListener('keyup',e=>{if(e.code==='Space')spaceDown=false;shiftDown=e.shiftKey});
 function updMouseFake(){if(tool==='place'&&ghostBlock&&mouse.ghost){const def=LIBMAP[ghostBlock.id];mouse.ghost.rot=ghostBlock.rot;if(def.lock){const ws=wallSnapForBlock(mouse.x,mouse.y);if(ws)mouse.ghost.rot=ws.ang+(ghostBlock.flip?180:0)}}}
 function delSel(){const ids=selIds();if(ids.length){S.items=S.items.filter(i=>!ids.includes(i.id));sel=null;msel=[];commit();panel();draw()}}
@@ -1271,6 +1297,57 @@ function buildFloors(){const app=$('#app');if(app.classList.contains('noL')||!ap
  const h=document.createElement('div');h.className='cat';h.textContent=target?'Pavimento selezionato':'Misure del nuovo pavimento';box.appendChild(h);floorUI(box,target?target.fp:FLR.cfg,target)}
 function toggleFloors(){const app=$('#app'),closed=app.classList.contains('noL'),showingF=app.classList.contains('showF');
  if(!closed&&showingF)app.classList.add('noL');else{app.classList.remove('noL');app.classList.add('showF');buildFloors()}spState();resize()}
+/* ---------- Sposta: spostare, ruotare, specchiare, allineare gli elementi selezionati ---------- */
+const bbOf=P=>{let x0=1e18,y0=1e18,x1=-1e18,y1=-1e18;P.forEach(p=>{x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])});return[x0,y0,x1,y1]};
+function itemBox(i){if(i.t==='block')return bbOf(blockCorners(i));
+ if(i.pts){const b=bbOf(i.pts),h=i.t==='wall'?i.th/2:0;return[b[0]-h,b[1]-h,b[2]+h,b[3]+h]}
+ if(i.t==='dim')return bbOf([i.a,i.b]);if(i.t==='text')return[i.x,i.y-i.fs,i.x+i.txt.length*i.fs*.55,i.y];return[i.x,i.y,i.x,i.y]}
+const gItems=()=>selIds().map(getItem).filter(i=>i&&editable(i));
+function groupBox(its){return bbOf(its.flatMap(i=>{const b=itemBox(i);return[[b[0],b[1]],[b[2],b[3]]]}))}
+function shiftItem(i,dx,dy){if(i.t==='block'||i.t==='text'){i.x+=dx;i.y+=dy}else if(i.t==='dim'){i.a=[i.a[0]+dx,i.a[1]+dy];i.b=[i.b[0]+dx,i.b[1]+dy]}else if(i.pts)i.pts=i.pts.map(p=>[p[0]+dx,p[1]+dy])}
+function mapItem(i,f){if(i.t==='block'||i.t==='text'){const q=f([i.x,i.y]);i.x=q[0];i.y=q[1]}else if(i.t==='dim'){i.a=f(i.a);i.b=f(i.b)}else if(i.pts)i.pts=i.pts.map(f)}
+const needSel=n=>{const its=gItems();if(its.length<(n||1)){toast(n>1?'Seleziona almeno '+n+' elementi (Seleziona multiplo)':'Seleziona prima uno o più elementi');return null}return its};
+const doneG=()=>{commit();panel();draw()};
+function rotGrp(a){const its=needSel();if(!its)return;const B=groupBox(its),c=[(B[0]+B[2])/2,(B[1]+B[3])/2],co=Math.cos(rad(a)),si=Math.sin(rad(a));
+ const f=p=>[c[0]+(p[0]-c[0])*co-(p[1]-c[1])*si,c[1]+(p[0]-c[0])*si+(p[1]-c[1])*co];
+ its.forEach(i=>{mapItem(i,f);if(i.t==='block')i.rot=((i.rot+a)%360+360)%360;if(i.t==='floor'&&i.fp)i.fp.rot=(((i.fp.rot||0)+a)%360+360)%360});doneG()}
+function mirGrp(axis){const its=needSel();if(!its)return;const B=groupBox(its),cx=(B[0]+B[2])/2,cy=(B[1]+B[3])/2;
+ const f=axis==='h'?p=>[2*cx-p[0],p[1]]:p=>[p[0],2*cy-p[1]];
+ its.forEach(i=>{mapItem(i,f);if(i.t==='block'){i.rot=(((axis==='h'?180-i.rot:-i.rot)%360)+360)%360;i.mir=!i.mir}if(i.t==='floor'&&i.fp)i.fp.rot=(((axis==='h'?180-(i.fp.rot||0):-(i.fp.rot||0))%360)+360)%360});doneG()}
+function alignGrp(mode){const its=needSel(2);if(!its)return;const bx=its.map(itemBox),U=groupBox(its);
+ its.forEach((i,k)=>{const b=bx[k];let dx=0,dy=0;
+  if(mode==='l')dx=U[0]-b[0];else if(mode==='r')dx=U[2]-b[2];else if(mode==='cx')dx=(U[0]+U[2])/2-(b[0]+b[2])/2;
+  else if(mode==='t')dy=U[1]-b[1];else if(mode==='b')dy=U[3]-b[3];else if(mode==='cy')dy=(U[1]+U[3])/2-(b[1]+b[3])/2;
+  shiftItem(i,dx,dy)});doneG()}
+function distGrp(axis){const its=needSel(3);if(!its)return;const c=i=>{const b=itemBox(i);return axis==='h'?(b[0]+b[2])/2:(b[1]+b[3])/2};
+ const s=its.slice().sort((a,b)=>c(a)-c(b)),c0=c(s[0]),cn=c(s[s.length-1]);
+ s.forEach((i,k)=>{const d=c0+k*(cn-c0)/(s.length-1)-c(i);if(axis==='h')shiftItem(i,d,0);else shiftItem(i,0,d)});doneG()}
+function moveBy(){const its=needSel();if(!its)return;const u=UN().n;
+ modal(`<h3>Sposta di…</h3><div class="row"><label>Destra (− = sinistra)</label><input id="mbx" type="number" step="any" value="0"><span class="un">${u}</span></div><div class="row"><label>Giù (− = su)</label><input id="mby" type="number" step="any" value="0"><span class="un">${u}</span></div><div class="btns"><button class="pri" id="mbok">Sposta</button><button id="mbno">Annulla</button></div>`,b=>{
+  b.querySelector('#mbx').focus();b.querySelector('#mbx').select();
+  const go=()=>{const dx=uFromE(parseFloat(b.querySelector('#mbx').value)||0),dy=uFromE(parseFloat(b.querySelector('#mby').value)||0);closeModal();its.forEach(i=>shiftItem(i,dx,dy));doneG()};
+  b.querySelector('#mbok').onclick=go;b.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')go()});b.querySelector('#mbno').onclick=closeModal})}
+function rotAsk(){if(!needSel())return;askNumber('Ruota di (gradi, senso orario)',90,v=>{if(!isNaN(v)&&v)rotGrp(v)})}
+function openMovePop(btn){const pop=$('#pop');if(pop.style.display==='flex'&&pop.dataset.k==='move'){closePop();return}
+ pop.dataset.k='move';pop.innerHTML='';pop.style.flexDirection='column';pop.style.width='318px';
+ const sec=t=>{const d=document.createElement('div');d.className='mvh';d.textContent=t;pop.appendChild(d)};
+ const row=list=>{const d=document.createElement('div');d.className='mvrow';list.forEach(([lab,fn,tt])=>{const b=document.createElement('button');b.textContent=lab;if(tt)b.title=tt;b.onclick=fn;d.appendChild(b)});pop.appendChild(d)};
+ sec('Sposta');row([['✥ Trascina',()=>{closePop();setTool('move')},'Trascina gli elementi selezionati'],['↦ Di una misura…',()=>{closePop();moveBy()},'Scrivi di quanto spostare']]);
+ sec('Ruota');row([['↻ 90°',()=>rotGrp(90)],['↺ 90°',()=>rotGrp(-90)],['180°',()=>rotGrp(180)],['Angolo…',()=>{closePop();rotAsk()}]]);
+ sec('Specchia');row([['↔ Orizzontale',()=>mirGrp('h'),'Capovolge destra/sinistra'],['↕ Verticale',()=>mirGrp('v'),'Capovolge alto/basso']]);
+ sec('Allinea (almeno 2 elementi)');row([['⇤ Sinistra',()=>alignGrp('l')],['↔ Centro',()=>alignGrp('cx')],['⇥ Destra',()=>alignGrp('r')]]);row([['⇧ Alto',()=>alignGrp('t')],['↕ Centro',()=>alignGrp('cy')],['⇩ Basso',()=>alignGrp('b')]]);
+ sec('Distribuisci (almeno 3 elementi)');row([['↔ Orizzontale',()=>distGrp('h'),'Spazi uguali in orizzontale'],['↕ Verticale',()=>distGrp('v'),'Spazi uguali in verticale']]);
+ sec('Altro');row([['⧉ Duplica',()=>{if(!needSel())return;dup()}]]);
+ const r=btn.getBoundingClientRect();pop.style.left=Math.max(8,Math.min(r.left,innerWidth-336))+'px';pop.style.top=(r.bottom+6)+'px';pop.style.maxHeight=Math.max(200,innerHeight-r.bottom-20)+'px';pop.style.overflowY='auto';pop.style.display='flex'}
+
+/* ---------- lente d'ingrandimento mentre si disegna con dito o penna (il dito non copre il punto) ---------- */
+function drawLoupe(){if(!aim||!DRAWT.includes(tool))return;const d=devicePixelRatio||1,W=cv.width/d,H=cv.height/d,r=56,Z=2.2,fs=w2s(mouse.x,mouse.y);
+ let cx=mouse.sx,cy=mouse.sy-135;if(cy<r+8)cy=mouse.sy+135;cx=Math.max(r+8,Math.min(W-r-8,cx));cy=Math.max(r+8,Math.min(H-r-8,cy));
+ const sw=2*r/Z;ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.clip();ctx.fillStyle=BG;ctx.fillRect(cx-r,cy-r,2*r,2*r);
+ try{ctx.drawImage(cv,(fs[0]-sw/2)*d,(fs[1]-sw/2)*d,sw*d,sw*d,cx-r,cy-r,2*r,2*r)}catch(e){}
+ ctx.restore();ctx.save();ctx.strokeStyle='#0284c7';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();
+ ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(cx-12,cy);ctx.lineTo(cx+12,cy);ctx.moveTo(cx,cy-12);ctx.lineTo(cx,cy+12);ctx.stroke();ctx.restore()}
+
 /* ---------- ingranaggio: impostazioni ---------- */
 function openSettings(){const mb=$('#mbox'),st=mb?mb.scrollTop:0,u=UN().n;
 const seg=(k,opts,cur)=>`<span class="seg">${opts.map(([v,t])=>`<button data-k="${k}" data-v="${v}" class="${String(cur)===String(v)?'on':''}">${t}</button>`).join('')}</span>`;
@@ -1289,7 +1366,8 @@ modal(`<h3>⚙ Impostazioni</h3>
 <div class="srow"><label>Griglia</label>${onoff('grid',S.gridOn)}</div>
 <div class="srow"><label>Misure sui muri</label>${onoff('quote',quoteOn)}</div>
 <div class="srow"><label>Aggancio del muro alla linea</label>${seg('align',[['in','Interno'],['c','Centro'],['out','Esterno']],WALIGN)}</div>
-<div class="srow"><label>Sensibilità dell’aggancio</label>${seg('sens',[['0.6','Bassa'],['1','Normale'],['1.5','Alta']],SET.sens)}</div></div>
+<div class="srow"><label>Sensibilità dell’aggancio</label>${seg('sens',[['0.6','Bassa'],['1','Normale'],['1.5','Alta']],SET.sens)}</div>
+<div class="srow"><label>Il tramezzo si ferma sul muro</label>${seg('partsnap',[['face','Alla faccia'],['axis','All’asse']],SET.partSnap||'face')}</div></div>
 <div class="setsec"><h4>Tablet e penna</h4>
 <div class="srow"><label>Tastierino numerico</label>${seg('kp',[['auto','Auto'],['on','Sempre'],['off','Mai']],SET.kp)}</div>
 <div class="hint">“Auto”: compare solo sugli schermi touch, mentre disegni un muro.</div>
@@ -1298,7 +1376,7 @@ modal(`<h3>⚙ Impostazioni</h3>
 <div class="srow"><label>Tema</label>${seg('theme',[['light','Chiaro'],['dark','Scuro']],document.body.classList.contains('dark')?'dark':'light')}</div></div>
 <div class="btns"><button id="sReset">Ripristina</button><button class="pri" id="sClose">Chiudi</button></div>`,b=>{
  b.dataset.k='set';b.scrollTop=st;
- const H={unit:v=>{SET.unit=v;saveSet();LB.key='';gridUI();panel();obar();draw()},ortho:v=>setOrtho(v==='1'),snap:v=>setSnap(v==='1'),grid:v=>{S.gridOn=v==='1';gridUI();commit();draw()},quote:v=>{quoteOn=v==='1';$('#bQuote').classList.toggle('on',quoteOn);draw()},align:v=>{WALIGN=v;try{localStorage.setItem('planimetria-align',v)}catch(e){}LB.key='';draw()},sens:v=>{SET.sens=+v;saveSet()},kp:v=>{SET.kp=v;saveSet();LB.key='';draw()},palm:v=>{SET.palm=v==='1';saveSet()},theme:v=>setTheme(v)};
+ const H={unit:v=>{SET.unit=v;saveSet();LB.key='';gridUI();panel();obar();draw()},ortho:v=>setOrtho(v==='1'),snap:v=>setSnap(v==='1'),grid:v=>{S.gridOn=v==='1';gridUI();commit();draw()},quote:v=>{quoteOn=v==='1';$('#bQuote').classList.toggle('on',quoteOn);draw()},align:v=>{WALIGN=v;try{localStorage.setItem('planimetria-align',v)}catch(e){}LB.key='';draw()},sens:v=>{SET.sens=+v;saveSet()},kp:v=>{SET.kp=v;saveSet();LB.key='';draw()},palm:v=>{SET.palm=v==='1';saveSet()},partsnap:v=>{SET.partSnap=v;saveSet()},theme:v=>setTheme(v)};
  b.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{H[x.dataset.k](x.dataset.v);openSettings()});
  const nm=(id,fn)=>{b.querySelector('#'+id).onchange=e=>{const v=uFromE(parseFloat(e.target.value));if(v>0){fn(v);commit();panel();draw()}openSettings()}};
  nm('sWall',v=>{S.wallTh=v});nm('sPart',v=>{S.partTh=v});nm('sGrid',v=>{S.grid=Math.round(v)||1;S.gridOn=true;gridUI()});
@@ -1322,7 +1400,7 @@ function kpKey(k){const ang=KP.f==='ang',el=$(ang?'#lbAng':'#lbLen');if(!el)retu
  if(k===','){if(ang)return;if(!LB[fl]){el.value='0';LB[fl]=true}if(!/[.,]/.test(el.value))el.value+=',';draw();return}
  if(!LB[fl]){el.value='';LB[fl]=true}
  if(el.value.length<8)el.value+=k;draw();followPoint(draftEnd())}
-function kpSync(){const el=$('#kpad');if(!el)return;const on=!!(draft&&draft.pts.length&&LENT.includes(draft.t)&&kpOn());el.style.display=on?'block':'none';if(!on)return;
+function kpSync(){const el=$('#kpad');if(!el)return;const on=!!(draft&&draft.pts.length&&LENT.includes(draft.t)&&kpOn()&&!aim);el.style.display=on?'block':'none';if(!on)return;
  el.classList.toggle('min',KP.min);$('#kpMin').textContent=KP.min?'▴':'▾';
  const l=$('#lbLen'),a=$('#lbAng');$('#kpLenV').textContent=(l&&l.value!==''?l.value:'—')+' '+UN().n;
  $('#kpAngV').textContent=a&&a.value!==''?(LB.da?a.value+'°':'auto '+a.value+'°'):'auto';
