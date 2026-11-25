@@ -755,7 +755,7 @@ const V=S.items.filter(vis);V.filter(i=>i.t==='floor').forEach(i=>drawItem(i));V
 V.filter(i=>i.t==='wall'||i.t==='line').forEach(i=>drawItem(i));
 V.filter(i=>i.t==='block').forEach(i=>drawItem(i));
 V.filter(i=>i.t==='dim'||i.t==='text').forEach(i=>drawItem(i));
-if(tool==='place'&&ghostBlock&&mouse.ghost){ctx.globalAlpha=.6;const gi=ghostItem();drawBlock(gi,false);ctx.globalAlpha=1;if(SET.apDim!==false&&isAp(gi))drawApDims(gi)}
+APHIT=[];if(tool==='place'&&ghostBlock&&mouse.ghost){ctx.globalAlpha=.6;const gi=ghostItem();drawBlock(gi,false);ctx.globalAlpha=1;if(SET.apDim!==false&&isAp(gi))drawApDims(gi)}
 else if(SET.apDim!==false&&quoteOn!==false){const si=getItem(sel);if(si&&isAp(si)&&vis(si))drawApDims(si)}
 if(draft){drawDraft();drawCloseRing();drawDraftDots()}
 if(calib&&calib.a){const a=w2s(...calib.a),b=w2s(mouse.x,mouse.y);if(calib.b)Object.assign(b,w2s(...calib.b));ctx.strokeStyle='#dc2626';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(b[0],b[1]);ctx.stroke()}
@@ -797,8 +797,14 @@ function apGaps(it){let best=null,bd=1e9;S.items.forEach(wl=>{if(wl.t!=='wall'||
 function drawApDims(it){const g=apGaps(it);if(!g)return;const z=view.z,P=(x,y)=>w2s(it.x+g.ex[0]*x+g.ey[0]*y,it.y+g.ex[1]*x+g.ey[1]*y);
  ctx.save();ctx.strokeStyle=TH.dim;ctx.fillStyle=TH.dim;ctx.lineWidth=1;ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
  const one=(x0,x1)=>{const len=x1-x0;if(len<1)return;const a=P(x0,g.y),b=P(x1,g.y);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);[[x0],[x1]].forEach(([x])=>{const t0=P(x,g.y-5),t1=P(x,g.y+5);ctx.moveTo(t0[0],t0[1]);ctx.lineTo(t1[0],t1[1])});ctx.stroke();
-  const m=P((x0+x1)/2,g.y),t=fmtScr(len),tw=ctx.measureText(t).width+8;ctx.save();ctx.fillStyle=BG;ctx.globalAlpha=.85;ctx.fillRect(m[0]-tw/2,m[1]-9-8,tw,15);ctx.restore();ctx.fillText(t,m[0],m[1]-9)};
- if(g.L>-1e8)one(g.L,-g.hw);if(g.R<1e8)one(g.hw,g.R);ctx.restore()}
+  const m=P((x0+x1)/2,g.y),t=fmtScr(len),tw=ctx.measureText(t).width+8;ctx.save();ctx.fillStyle=BG;ctx.globalAlpha=.85;ctx.fillRect(m[0]-tw/2,m[1]-9-8,tw,15);ctx.restore();ctx.fillText(t,m[0],m[1]-9);if(it.id!=null)APHIT.push({x:m[0]-tw/2-6,y:m[1]-17-6,w:tw+12,h:27,id:it.id,side:side,len:len})};
+ let side='L';if(g.L>-1e8)one(g.L,-g.hw);side='R';if(g.R<1e8)one(g.hw,g.R);ctx.restore()}
+let APHIT=[];
+/* tocco su una misura parziale: scrivi il valore e la porta/finestra si sposta, l'altra misura si ricalcola da sola */
+function apEdit(id,side,len){const it=getItem(id);if(!it)return;askNumber('Misura '+(side==='L'?'a sinistra':'a destra')+' ('+UN().n+')',uE(len),v=>{if(isNaN(v))return;const nv=uFromE(v);const g=apGaps(it);if(!g)return;
+ const oldG=side==='L'?-g.hw-g.L:g.R-g.hw,otherOld=side==='L'?(g.R<1e8?g.R-g.hw:1e9):(g.L>-1e8?-g.hw-g.L:1e9);
+ if(!(nv>=0)||nv-oldG>otherOld+.01){toast('Misura troppo grande: non c’è spazio sul muro');return}
+ const d=side==='L'?nv-oldG:-(nv-oldG);it.x+=g.ex[0]*d;it.y+=g.ex[1]*d;commit();panel();draw()})}
 function lenLabels(pts,closed,lens){if(!quoteOn)return;const z=view.z;ctx.fillStyle=TH.lab;ctx.font='11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const n=closed?pts.length:pts.length-1;for(let k=0;k<n;k++){const a=pts[k],b=pts[(k+1)%pts.length],l=dist(a,b),lv=lens&&lens[k]!=null?lens[k]:l;if(l*z<46)continue;const m=w2s((a[0]+b[0])/2,(a[1]+b[1])/2);let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;ctx.save();ctx.translate(m[0],m[1]);ctx.rotate(ang);ctx.fillText(fmtScr(lv),0,-9-(S.wallTh*z/2));ctx.restore()}}
 function path(pts,closed){ctx.beginPath();pts.forEach((p,k)=>{const s=w2s(p[0],p[1]);k?ctx.lineTo(s[0],s[1]):ctx.moveTo(s[0],s[1])});if(closed)ctx.closePath()}
 function drawItem(i){const z=view.z,on=i.id===sel||(msel.length>1&&msel.includes(i.id));
@@ -855,6 +861,7 @@ try{cv.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,pos(e));if(
 if(ptrs.size>2)return;
 firstTouch=e.pointerType==='touch'?{t:Date.now(),n:S.items.length,dn:draft?draft.pts.length:-1,si}:null;
 updMouse(e);const wx=mouse.x,wy=mouse.y;
+{const ah=tool!=='place'&&APHIT.find(h=>mouse.sx>=h.x&&mouse.sx<=h.x+h.w&&mouse.sy>=h.y&&mouse.sy<=h.y+h.h);if(ah){e.preventDefault();ptrs.delete(e.pointerId);apEdit(ah.id,ah.side,ah.len);return}}
 if(e.button===1||spaceDown||tool==='hand'){drag={k:'pan',sx:mouse.sx,sy:mouse.sy,vx:view.x,vy:view.y};cv.style.cursor='grabbing';return}
 if(e.button===2){if(draft)finishDraft();return}
 /* Seleziona serve solo a scegliere: per spostare, ruotare o modificare un elemento si passa dal menu Sposta (con un tocco non si muove mai nulla da soli) */
