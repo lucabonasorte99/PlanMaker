@@ -1,4 +1,4 @@
-# Planimetria – Arreda casa
+# PlanMaker
 
 Web app per disegnare la pianta di una casa e arredarla, pensata per PC e tablet.
 È un'unica pagina HTML: non serve installare niente, non c'è un server e non ci sono dipendenze da compilare.

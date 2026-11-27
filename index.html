@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Planimetria – Arreda casa</title>
+<title>PlanMaker</title>
 <meta name="theme-color" content="#0284c7">
-<meta name="description" content="Planimetria: disegna muri, porte e finestre, arreda casa con blocchi parametrici, importa DXF/PDF in scala ed esporta PDF e DXF.">
+<meta name="description" content="PlanMaker: disegna muri, porte e finestre, arreda casa con blocchi parametrici, importa DXF/PDF in scala ed esporta PDF e DXF.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Planimetria">
+<meta name="apple-mobile-web-app-title" content="PlanMaker">
 
 <style>
 :root{--bg:#f7f7f5;--panel:#ffffff;--line:#dbe7f0;--ink:#1f2328;--mute:#64748b;--acc:#0284c7;--accbg:#e0f2fe;--sky:#f0f9ff;--ico:#0369a1}
@@ -1243,7 +1243,7 @@ const one=100*k;col('#0f172a');P((.3*pt).toFixed(2)+' w');const sx=M+aw*.45,sy=M
 const content=o.join('\n'),W=(pw*pt).toFixed(2),H=(ph*pt).toFixed(2);
 const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>',`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>`,
 `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
-`<< /Title (${pdfTxt(CURNAME||'Planimetria')}) /Producer (Planimetria) >>`];
+`<< /Title (${pdfTxt(CURNAME||'Planimetria')}) /Producer (PlanMaker) >>`];
 let out='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';const off=[];objs.forEach((b,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${b}\nendobj\n`});const xr=out.length;
 out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R /Info 7 0 R >>\nstartxref\n${xr}\n%%EOF`;
 const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return{bytes:u,scale:sc,paper}}
@@ -1317,7 +1317,7 @@ for(const p of G.P){if(p.t==='clip'){c.save();c.beginPath();c.rect(p.rect[0]*s,p
  else if(p.t==='t'){c.save();c.translate(p.x*s,p.y*s);if(p.rot)c.rotate(p.rot);c.font=(p.bold?'700 ':'')+Math.max(1,p.size*s)+'px Helvetica, Arial, sans-serif';c.fillStyle=p.col||'#0f172a';c.textAlign=p.align==='c'?'center':p.align==='r'?'right':'left';c.textBaseline='alphabetic';c.fillText(p.str,0,0);c.restore()}}
 c.restore()}
 function pdfWrap(content,Wpt,Hpt,title){const objs=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>',`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${Wpt} ${Hpt}] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 4 0 R >>`,
-`<< /Length ${content.length} >>\nstream\n${content}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',`<< /Title (${pdfTxt(title)}) /Producer (Planimetria) >>`];
+`<< /Length ${content.length} >>\nstream\n${content}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',`<< /Title (${pdfTxt(title)}) /Producer (PlanMaker) >>`];
 let out='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';const off=[];objs.forEach((b,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${b}\nendobj\n`});const xr=out.length;
 out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R /Info 7 0 R >>\nstartxref\n${xr}\n%%EOF`;
 const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}

@@ -1,6 +1,6 @@
 {
-  "name": "Planimetria – Arreda casa",
-  "short_name": "Planimetria",
+  "name": "PlanMaker",
+  "short_name": "PlanMaker",
   "description": "Disegna la pianta, arreda con blocchi parametrici, importa DXF/PDF in scala ed esporta PDF e DXF.",
   "lang": "it",
   "start_url": "./",
